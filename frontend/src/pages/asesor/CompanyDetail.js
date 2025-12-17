@@ -89,6 +89,9 @@ const CompanyDetail = () => {
   });
   const [savingProject, setSavingProject] = useState(false);
   const [projectError, setProjectError] = useState('');
+  
+  // Intake state
+  const [intake, setIntake] = useState(null);
 
   useEffect(() => {
     fetchData();
