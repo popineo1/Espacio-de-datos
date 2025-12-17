@@ -594,6 +594,286 @@ class EspacioDatosAPITester:
         
         return success
 
+    # ==================== PHASE 2 PROJECT TESTS ====================
+    
+    def test_project_update_space_name(self):
+        """Test updating project space name and checklist auto-update"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Project Update Space Name", False, "No cliente apta token available")
+            return False
+        
+        # Get the apta company ID first
+        success, companies = self.run_test("Get Apta Company", "GET", "companies", 200, token=self.cliente_apta_token)
+        if not success or not companies:
+            self.log_test("Project Update Space Name", False, "Could not get apta company")
+            return False
+        
+        apta_company_id = companies[0]['id']
+        
+        # Update space name
+        update_data = {"space_name": "Espacio de Datos Energía"}
+        success, response = self.run_test(
+            "Project Update Space Name",
+            "PUT",
+            f"companies/{apta_company_id}/project",
+            200,
+            data=update_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            # Verify checklist updated
+            checklist = response.get('incorporation_checklist', {})
+            if checklist.get('espacio_seleccionado'):
+                self.log_test("Checklist Auto-Update (Space Selected)", True)
+            else:
+                self.log_test("Checklist Auto-Update (Space Selected)", False, "Checklist not updated")
+        
+        return success
+
+    def test_project_update_target_role(self):
+        """Test updating project target role and checklist auto-update"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Project Update Target Role", False, "No cliente apta token available")
+            return False
+        
+        # Get the apta company ID first
+        success, companies = self.run_test("Get Apta Company for Role", "GET", "companies", 200, token=self.cliente_apta_token)
+        if not success or not companies:
+            return False
+        
+        apta_company_id = companies[0]['id']
+        
+        # Update target role
+        update_data = {"target_role": "proveedor"}
+        success, response = self.run_test(
+            "Project Update Target Role",
+            "PUT",
+            f"companies/{apta_company_id}/project",
+            200,
+            data=update_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            # Verify checklist updated
+            checklist = response.get('incorporation_checklist', {})
+            if checklist.get('rol_definido'):
+                self.log_test("Checklist Auto-Update (Role Defined)", True)
+            else:
+                self.log_test("Checklist Auto-Update (Role Defined)", False, "Checklist not updated")
+        
+        return success
+
+    def test_project_update_use_case(self):
+        """Test updating project use case and checklist auto-update"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Project Update Use Case", False, "No cliente apta token available")
+            return False
+        
+        # Get the apta company ID first
+        success, companies = self.run_test("Get Apta Company for Use Case", "GET", "companies", 200, token=self.cliente_apta_token)
+        if not success or not companies:
+            return False
+        
+        apta_company_id = companies[0]['id']
+        
+        # Update use case
+        update_data = {"use_case": "Compartir datos de consumo energético para optimización de la red eléctrica"}
+        success, response = self.run_test(
+            "Project Update Use Case",
+            "PUT",
+            f"companies/{apta_company_id}/project",
+            200,
+            data=update_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            # Verify checklist updated
+            checklist = response.get('incorporation_checklist', {})
+            if checklist.get('caso_uso_definido'):
+                self.log_test("Checklist Auto-Update (Use Case Defined)", True)
+            else:
+                self.log_test("Checklist Auto-Update (Use Case Defined)", False, "Checklist not updated")
+        
+        return success
+
+    def test_project_update_rgpd(self):
+        """Test updating project RGPD validation and checklist auto-update"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Project Update RGPD", False, "No cliente apta token available")
+            return False
+        
+        # Get the apta company ID first
+        success, companies = self.run_test("Get Apta Company for RGPD", "GET", "companies", 200, token=self.cliente_apta_token)
+        if not success or not companies:
+            return False
+        
+        apta_company_id = companies[0]['id']
+        
+        # Update RGPD validation
+        update_data = {"rgpd_checked": True}
+        success, response = self.run_test(
+            "Project Update RGPD",
+            "PUT",
+            f"companies/{apta_company_id}/project",
+            200,
+            data=update_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            # Verify checklist updated
+            checklist = response.get('incorporation_checklist', {})
+            if checklist.get('validacion_rgpd'):
+                self.log_test("Checklist Auto-Update (RGPD Validated)", True)
+            else:
+                self.log_test("Checklist Auto-Update (RGPD Validated)", False, "Checklist not updated")
+        
+        return success
+
+    def test_project_status_update_to_in_progress(self):
+        """Test updating project status from pendiente to en_progreso"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Project Status Update In Progress", False, "No cliente apta token available")
+            return False
+        
+        # Get the apta company ID first
+        success, companies = self.run_test("Get Apta Company for Status", "GET", "companies", 200, token=self.cliente_apta_token)
+        if not success or not companies:
+            return False
+        
+        apta_company_id = companies[0]['id']
+        
+        # First set status to pendiente
+        reset_data = {"incorporation_status": "pendiente"}
+        self.run_test("Reset Status to Pendiente", "PUT", f"companies/{apta_company_id}/project", 200, data=reset_data, token=self.asesor_token)
+        
+        # Update status to en_progreso
+        update_data = {"incorporation_status": "en_progreso"}
+        success, response = self.run_test(
+            "Project Status Update In Progress",
+            "PUT",
+            f"companies/{apta_company_id}/project",
+            200,
+            data=update_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            if response.get('incorporation_status') == 'en_progreso':
+                self.log_test("Status Updated to En Progreso", True)
+            else:
+                self.log_test("Status Updated to En Progreso", False, f"Expected 'en_progreso', got '{response.get('incorporation_status')}'")
+        
+        return success
+
+    def test_project_status_update_to_completed_with_incomplete_checklist(self):
+        """Test that updating status to completada fails with incomplete checklist"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Project Status Completed (Incomplete Checklist)", False, "No cliente apta token available")
+            return False
+        
+        # Get the apta company ID first
+        success, companies = self.run_test("Get Apta Company for Incomplete", "GET", "companies", 200, token=self.cliente_apta_token)
+        if not success or not companies:
+            return False
+        
+        apta_company_id = companies[0]['id']
+        
+        # Clear some checklist items first
+        clear_data = {"space_name": ""}
+        self.run_test("Clear Space Name", "PUT", f"companies/{apta_company_id}/project", 200, data=clear_data, token=self.asesor_token)
+        
+        # Try to update status to completada (should fail)
+        update_data = {"incorporation_status": "completada"}
+        return self.run_test(
+            "Project Status Completed (Incomplete Checklist)",
+            "PUT",
+            f"companies/{apta_company_id}/project",
+            400,
+            data=update_data,
+            token=self.asesor_token
+        )
+
+    def test_project_status_update_to_completed_with_complete_checklist(self):
+        """Test updating status to completada with complete checklist"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Project Status Completed (Complete Checklist)", False, "No cliente apta token available")
+            return False
+        
+        # Get the apta company ID first
+        success, companies = self.run_test("Get Apta Company for Complete", "GET", "companies", 200, token=self.cliente_apta_token)
+        if not success or not companies:
+            return False
+        
+        apta_company_id = companies[0]['id']
+        
+        # Complete all checklist items
+        complete_data = {
+            "space_name": "Espacio de Datos Energía",
+            "target_role": "proveedor",
+            "use_case": "Compartir datos de consumo energético",
+            "rgpd_checked": True
+        }
+        self.run_test("Complete All Fields", "PUT", f"companies/{apta_company_id}/project", 200, data=complete_data, token=self.asesor_token)
+        
+        # Update status to completada
+        update_data = {"incorporation_status": "completada"}
+        success, response = self.run_test(
+            "Project Status Completed (Complete Checklist)",
+            "PUT",
+            f"companies/{apta_company_id}/project",
+            200,
+            data=update_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            if response.get('incorporation_status') == 'completada':
+                self.log_test("Status Updated to Completada", True)
+            else:
+                self.log_test("Status Updated to Completada", False, f"Expected 'completada', got '{response.get('incorporation_status')}'")
+        
+        return success
+
+    def test_client_dashboard_apta_with_project_details(self):
+        """Test client dashboard shows project details for apta company"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Client Dashboard Apta Project Details", False, "No cliente apta token available")
+            return False
+        
+        success, response = self.run_test("Client Dashboard Apta Project Details", "GET", "client/dashboard", 200, token=self.cliente_apta_token)
+        
+        if success:
+            project = response.get('project')
+            if project:
+                # Check project fields are visible
+                if project.get('space_name'):
+                    self.log_test("Client Sees Space Name", True)
+                else:
+                    self.log_test("Client Sees Space Name", False, "Space name not visible")
+                
+                if project.get('target_role'):
+                    self.log_test("Client Sees Target Role", True)
+                else:
+                    self.log_test("Client Sees Target Role", False, "Target role not visible")
+                
+                if project.get('use_case'):
+                    self.log_test("Client Sees Use Case", True)
+                else:
+                    self.log_test("Client Sees Use Case", False, "Use case not visible")
+                
+                if project.get('incorporation_checklist'):
+                    self.log_test("Client Sees Checklist Progress", True)
+                else:
+                    self.log_test("Client Sees Checklist Progress", False, "Checklist not visible")
+            else:
+                self.log_test("Client Dashboard Apta Project Details", False, "No project in dashboard")
+        
+        return success
+
 def main():
     print("🚀 Starting Espacio de Datos API Tests")
     print("=" * 50)
