@@ -283,6 +283,12 @@ const CompanyDetail = () => {
             <FileCheck className="h-4 w-4" />
             Diagnóstico
           </TabsTrigger>
+          {project && (
+            <TabsTrigger value="proyecto" data-testid="tab-proyecto" className="gap-2">
+              <FileCheck className="h-4 w-4" />
+              Proyecto (Fase 2)
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Datos Tab */}
