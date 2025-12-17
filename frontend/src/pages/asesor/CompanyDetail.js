@@ -62,6 +62,13 @@ const CompanyDetail = () => {
   
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  
+  // User creation state
+  const [companyUser, setCompanyUser] = useState(null);
+  const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
+  const [userFormData, setUserFormData] = useState({ email: '', name: '', password: '' });
+  const [userError, setUserError] = useState('');
+  const [creatingUser, setCreatingUser] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -70,21 +77,55 @@ const CompanyDetail = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [companyRes, diagnosticRes, projectRes] = await Promise.all([
+      const [companyRes, diagnosticRes, projectRes, userRes] = await Promise.all([
         axios.get(`${API_URL}/companies/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/companies/${id}/diagnostic`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/companies/${id}/project`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }))
+        axios.get(`${API_URL}/companies/${id}/project`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null })),
+        axios.get(`${API_URL}/companies/${id}/user`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }))
       ]);
       
       setCompany(companyRes.data);
       setDiagnostic(diagnosticRes.data);
       setProject(projectRes.data);
+      setCompanyUser(userRes.data);
     } catch (error) {
       setError('Error al cargar los datos');
       console.error('Error:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setUserError('');
+    setCreatingUser(true);
+    
+    try {
+      const response = await axios.post(
+        `${API_URL}/companies/${id}/user`,
+        userFormData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setCompanyUser(response.data);
+      setShowCreateUserDialog(false);
+      setUserFormData({ email: '', name: '', password: '' });
+    } catch (error) {
+      setUserError(error.response?.data?.detail || 'Error al crear usuario');
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
+  const openCreateUserDialog = () => {
+    // Pre-fill with contact info if available
+    setUserFormData({
+      email: '',
+      name: company?.contact_name || '',
+      password: ''
+    });
+    setUserError('');
+    setShowCreateUserDialog(true);
   };
 
   const updateDiagnostic = async (field, value) => {
