@@ -1,23 +1,128 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { 
-  FileText, 
+  Clock, 
   CheckCircle2, 
-  Clock,
-  Upload,
-  Bell
+  XCircle,
+  Building2,
+  FileCheck,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
-const ClienteDashboard = () => {
-  const { user } = useAuth();
+const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-  const stats = [
-    { label: 'Solicitudes Totales', value: '5', icon: FileText, color: 'bg-blue-100 text-blue-600' },
-    { label: 'En Proceso', value: '2', icon: Clock, color: 'bg-amber-100 text-amber-600' },
-    { label: 'Aprobadas', value: '3', icon: CheckCircle2, color: 'bg-green-100 text-green-600' },
-    { label: 'Documentos Pendientes', value: '1', icon: Upload, color: 'bg-red-100 text-red-600' },
-  ];
+const ClienteDashboard = () => {
+  const { user, token } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/client/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDashboardData(response.data);
+      } catch (error) {
+        setError('Error al cargar los datos');
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-[#8b1530]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <p className="text-[#64748b]">{error}</p>
+      </div>
+    );
+  }
+
+  const getStatusConfig = () => {
+    if (!dashboardData) return null;
+
+    switch (dashboardData.status) {
+      case 'en_evaluacion':
+        return {
+          icon: Clock,
+          iconBg: 'bg-amber-100',
+          iconColor: 'text-amber-600',
+          cardBorder: 'border-amber-200',
+          cardBg: 'bg-amber-50'
+        };
+      case 'apta':
+        return {
+          icon: CheckCircle2,
+          iconBg: 'bg-green-100',
+          iconColor: 'text-green-600',
+          cardBorder: 'border-green-200',
+          cardBg: 'bg-green-50'
+        };
+      case 'no_apta':
+        return {
+          icon: XCircle,
+          iconBg: 'bg-slate-100',
+          iconColor: 'text-slate-600',
+          cardBorder: 'border-slate-200',
+          cardBg: 'bg-slate-50'
+        };
+      default:
+        return {
+          icon: AlertCircle,
+          iconBg: 'bg-slate-100',
+          iconColor: 'text-slate-600',
+          cardBorder: 'border-slate-200',
+          cardBg: 'bg-slate-50'
+        };
+    }
+  };
+
+  const config = getStatusConfig();
+  const StatusIcon = config?.icon || AlertCircle;
+
+  // No company assigned
+  if (dashboardData?.status === 'sin_empresa') {
+    return (
+      <div data-testid="cliente-dashboard" className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-[#0f172a] tracking-tight">
+            Mi Panel
+          </h1>
+          <p className="text-[#64748b] mt-1">
+            Bienvenido, {user?.name}
+          </p>
+        </div>
+
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-16 w-16 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-amber-900 mb-2">
+              Sin empresa asignada
+            </h2>
+            <p className="text-amber-700">
+              {dashboardData.message}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div data-testid="cliente-dashboard" className="space-y-8">
@@ -31,130 +136,139 @@ const ClienteDashboard = () => {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card 
-              key={index} 
-              className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-shadow"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-[#64748b]">{stat.label}</p>
-                    <p className="text-3xl font-bold text-[#0f172a] mt-1">{stat.value}</p>
-                  </div>
-                  <div className={`h-12 w-12 rounded-xl ${stat.color} flex items-center justify-center`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Company Info */}
+      {dashboardData?.company && (
         <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="h-5 w-5 text-[#8b1530]" />
-              Mis Solicitudes
-            </CardTitle>
-            <CardDescription>Estado de tus trámites</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium text-[#0f172a]">Subvención Kit Digital</p>
-                    <p className="text-xs text-[#64748b]">Aprobada el 15/11/2024</p>
-                  </div>
-                </div>
-                <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                  Completada
-                </span>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-xl bg-[#fbeff3] flex items-center justify-center">
+                <Building2 className="h-7 w-7 text-[#8b1530]" />
               </div>
-              <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-amber-600" />
-                  <div>
-                    <p className="text-sm font-medium text-[#0f172a]">Ayuda Transformación Digital</p>
-                    <p className="text-xs text-[#64748b]">En revisión</p>
-                  </div>
-                </div>
-                <span className="text-xs px-2 py-1 bg-amber-100 text-amber-800 rounded-full">
-                  En proceso
-                </span>
+              <div>
+                <h2 className="text-xl font-semibold text-[#0f172a]">
+                  {dashboardData.company.name}
+                </h2>
+                <p className="text-[#64748b]">Tu empresa</p>
               </div>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+      {/* Status Card */}
+      <Card className={`${config?.cardBorder} ${config?.cardBg}`}>
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center text-center">
+            <div className={`h-20 w-20 rounded-full ${config?.iconBg} flex items-center justify-center mb-4`}>
+              <StatusIcon className={`h-10 w-10 ${config?.iconColor}`} />
+            </div>
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">
+              {dashboardData?.title}
+            </h2>
+            <p className="text-[#64748b] max-w-md">
+              {dashboardData?.message}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Project Info (only if apta) */}
+      {dashboardData?.project && (
+        <Card className="border-green-200 bg-green-50">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Bell className="h-5 w-5 text-[#8b1530]" />
-              Notificaciones Recientes
+            <CardTitle className="text-lg flex items-center gap-2 text-green-800">
+              <FileCheck className="h-5 w-5" />
+              Tu Proyecto
             </CardTitle>
-            <CardDescription>Últimas actualizaciones</CardDescription>
+            <CardDescription className="text-green-700">
+              Información sobre tu proceso de incorporación
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                <div className="h-2 w-2 mt-2 rounded-full bg-[#8b1530]"></div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-green-200">
                 <div>
-                  <p className="text-sm font-medium text-[#0f172a]">Documento requerido</p>
-                  <p className="text-xs text-[#64748b]">Por favor, sube el certificado de empresa actualizado</p>
-                  <p className="text-xs text-[#8b1530] mt-1">Hace 2 horas</p>
+                  <p className="font-semibold text-[#0f172a]">{dashboardData.project.title}</p>
+                  <p className="text-sm text-[#64748b]">Estado: {dashboardData.project.status}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-[#64748b]">Fase actual</p>
+                  <p className="text-2xl font-bold text-green-600">{dashboardData.project.phase}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                <div className="h-2 w-2 mt-2 rounded-full bg-green-500"></div>
-                <div>
-                  <p className="text-sm font-medium text-[#0f172a]">Solicitud aprobada</p>
-                  <p className="text-xs text-[#64748b]">Tu solicitud de Kit Digital ha sido aprobada</p>
-                  <p className="text-xs text-[#64748b] mt-1">Hace 3 días</p>
+
+              <div className="bg-white rounded-lg border border-green-200 p-4">
+                <h4 className="font-medium text-[#0f172a] mb-3">Progreso del proceso</h4>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-[#64748b]">Fase 1</span>
+                      <span className="text-xs text-[#64748b]">Fase 2</span>
+                      <span className="text-xs text-[#64748b]">Fase 3</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 rounded-full transition-all duration-500"
+                        style={{ width: `${(dashboardData.project.phase / 3) * 100}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
+                <p className="text-xs text-green-700 mt-2">
+                  Actualmente en Fase {dashboardData.project.phase}: Incorporación efectiva al espacio de datos
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
-      {/* Asesor Info */}
+      {/* Info about the process */}
       <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
         <CardHeader>
-          <CardTitle className="text-lg">Tu Asesor Asignado</CardTitle>
-          <CardDescription>Contacta con tu asesor para cualquier consulta</CardDescription>
+          <CardTitle className="text-lg">Información del Proceso</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-[#fbeff3] flex items-center justify-center">
-              <span className="text-[#8b1530] font-bold text-lg">AD</span>
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+              <div className="h-6 w-6 rounded-full bg-[#8b1530] text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                1
+              </div>
+              <div>
+                <p className="font-medium text-[#0f172a]">Evaluación inicial</p>
+                <p className="text-sm text-[#64748b]">Nuestro equipo analiza la elegibilidad de tu empresa</p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-[#0f172a]">Asesor Demo</p>
-              <p className="text-sm text-[#64748b]">asesor@espaciodatos.com</p>
-              <p className="text-xs text-[#8b1530] mt-1">Disponible de Lunes a Viernes, 9:00 - 18:00</p>
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+              <div className="h-6 w-6 rounded-full bg-[#8b1530] text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                2
+              </div>
+              <div>
+                <p className="font-medium text-[#0f172a]">Incorporación al espacio de datos</p>
+                <p className="text-sm text-[#64748b]">Proceso de integración efectiva en el ecosistema de datos</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+              <div className="h-6 w-6 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                3
+              </div>
+              <div>
+                <p className="font-medium text-[#0f172a]">Siguiente fase</p>
+                <p className="text-sm text-[#64748b]">Más información próximamente</p>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Coming Soon Notice */}
+      {/* Contact */}
       <Card className="border-[#fbeff3] bg-[#fbeff3]/50">
         <CardContent className="p-6 text-center">
           <p className="text-[#8b1530] font-medium">
-            Funcionalidad completa próximamente
+            ¿Tienes dudas sobre tu proceso?
           </p>
           <p className="text-sm text-[#64748b] mt-1">
-            En esta primera iteración se ha configurado la base de autenticación y RBAC.
+            Contacta con tu asesor asignado para más información.
           </p>
         </CardContent>
       </Card>

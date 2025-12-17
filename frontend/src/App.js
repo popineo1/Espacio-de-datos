@@ -9,6 +9,9 @@ import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import AsesorDashboard from "./pages/asesor/AsesorDashboard";
+import CompanyList from "./pages/asesor/CompanyList";
+import CompanyForm from "./pages/asesor/CompanyForm";
+import CompanyDetail from "./pages/asesor/CompanyDetail";
 import ClienteDashboard from "./pages/cliente/ClienteDashboard";
 
 // Components
@@ -47,7 +50,10 @@ function App() {
             }
           >
             <Route index element={<AsesorDashboard />} />
-            <Route path="clients" element={<AsesorDashboard />} />
+            <Route path="empresas" element={<CompanyList />} />
+            <Route path="empresas/nueva" element={<CompanyForm />} />
+            <Route path="empresas/:id" element={<CompanyDetail />} />
+            <Route path="empresas/:id/editar" element={<CompanyForm />} />
           </Route>
 
           {/* Cliente Routes */}
@@ -60,7 +66,6 @@ function App() {
             }
           >
             <Route index element={<ClienteDashboard />} />
-            <Route path="documents" element={<ClienteDashboard />} />
           </Route>
 
           {/* Default redirect */}

@@ -8,9 +8,8 @@ import {
   Users, 
   LogOut,
   ChevronRight,
-  Briefcase,
-  FileText,
-  Settings
+  Building2,
+  FileText
 } from 'lucide-react';
 import { Button } from '../ui/button';
 
@@ -34,13 +33,12 @@ const Layout = () => {
     if (isAsesor) {
       return [
         { path: '/asesor', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/asesor/clients', label: 'Clientes', icon: Briefcase },
+        { path: '/asesor/empresas', label: 'Empresas', icon: Building2 },
       ];
     }
     if (isCliente) {
       return [
-        { path: '/cliente', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/cliente/documents', label: 'Documentos', icon: FileText },
+        { path: '/cliente', label: 'Mi Panel', icon: LayoutDashboard },
       ];
     }
     return [];
@@ -49,6 +47,15 @@ const Layout = () => {
   const navItems = getNavItems();
   const roleLabel = isAdmin ? 'Administrador' : isAsesor ? 'Asesor' : 'Cliente';
   const roleColor = isAdmin ? 'bg-red-100 text-red-800' : isAsesor ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+
+  const isActiveRoute = (path) => {
+    if (path === '/asesor' && location.pathname === '/asesor') return true;
+    if (path === '/asesor/empresas' && location.pathname.startsWith('/asesor/empresas')) return true;
+    if (path === '/admin' && location.pathname === '/admin') return true;
+    if (path === '/admin/users' && location.pathname.startsWith('/admin/users')) return true;
+    if (path === '/cliente' && location.pathname.startsWith('/cliente')) return true;
+    return location.pathname === path;
+  };
 
   return (
     <div className="min-h-screen bg-[#f4f6fb]">
@@ -82,13 +89,13 @@ const Layout = () => {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = isActiveRoute(item.path);
             const Icon = item.icon;
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                data-testid={`nav-${item.label.toLowerCase()}`}
+                data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive 
                     ? 'bg-[#fbeff3] text-[#8b1530]' 
