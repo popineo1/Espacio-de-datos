@@ -43,7 +43,14 @@ import {
   Shield,
   UserPlus,
   Mail,
-  Key
+  Key,
+  Database,
+  Users,
+  FileText,
+  ShieldCheck,
+  Play,
+  Check,
+  Square
 } from 'lucide-react';
 
 const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
