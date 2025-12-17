@@ -357,7 +357,46 @@ const CompanyDetail = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)] lg:col-span-2">
+            {/* User Access Card */}
+            <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="h-5 w-5 text-[#8b1530]" />
+                  Acceso de Usuario
+                </CardTitle>
+                <CardDescription>Usuario cliente vinculado a esta empresa</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {companyUser ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <User className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-green-900">{companyUser.name}</p>
+                        <p className="text-sm text-green-700">{companyUser.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <User className="h-10 w-10 text-[#64748b] mx-auto mb-2" />
+                    <p className="text-[#64748b] text-sm mb-4">No hay usuario asignado</p>
+                    <Button
+                      onClick={openCreateUserDialog}
+                      data-testid="create-user-btn"
+                      className="bg-[#8b1530] hover:bg-[#701126] gap-2"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Crear usuario cliente
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <CardHeader>
                 <CardTitle className="text-lg">Registro</CardTitle>
               </CardHeader>
