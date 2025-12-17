@@ -502,6 +502,217 @@ const CompanyDetail = () => {
           </div>
         </TabsContent>
 
+        {/* Proyecto Tab */}
+        {project && (
+          <TabsContent value="proyecto">
+            <div className="space-y-6">
+              {projectError && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{projectError}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Status Card */}
+              <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Estado de Incorporación</CardTitle>
+                      <CardDescription>Fase 2: Incorporación al Espacio de Datos</CardDescription>
+                    </div>
+                    {getIncorporationStatusBadge(project.incorporation_status)}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-3">
+                    {project.incorporation_status === 'pendiente' && (
+                      <Button
+                        onClick={() => updateIncorporationStatus('en_progreso')}
+                        disabled={savingProject}
+                        data-testid="mark-in-progress-btn"
+                        className="bg-blue-600 hover:bg-blue-700 gap-2"
+                      >
+                        <Play className="h-4 w-4" />
+                        Marcar como En progreso
+                      </Button>
+                    )}
+                    {project.incorporation_status === 'en_progreso' && (
+                      <Button
+                        onClick={() => updateIncorporationStatus('completada')}
+                        disabled={savingProject}
+                        data-testid="mark-completed-btn"
+                        className="bg-green-600 hover:bg-green-700 gap-2"
+                      >
+                        <Check className="h-4 w-4" />
+                        Marcar como Completada
+                      </Button>
+                    )}
+                    {project.incorporation_status === 'completada' && (
+                      <div className="flex items-center gap-2 text-green-700">
+                        <CheckCircle2 className="h-5 w-5" />
+                        <span className="font-medium">Incorporación completada</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Checklist Card */}
+              <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileCheck className="h-5 w-5 text-[#8b1530]" />
+                    Checklist de Incorporación
+                  </CardTitle>
+                  <CardDescription>Completa todos los pasos para poder finalizar la incorporación</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className={`flex items-center gap-3 p-4 rounded-lg ${project.incorporation_checklist?.espacio_seleccionado ? 'bg-green-50 border border-green-200' : 'bg-slate-50'}`}>
+                      {project.incorporation_checklist?.espacio_seleccionado ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Square className="h-5 w-5 text-slate-400" />
+                      )}
+                      <span className={project.incorporation_checklist?.espacio_seleccionado ? 'text-green-800' : 'text-slate-600'}>
+                        Espacio de datos seleccionado
+                      </span>
+                    </div>
+                    <div className={`flex items-center gap-3 p-4 rounded-lg ${project.incorporation_checklist?.rol_definido ? 'bg-green-50 border border-green-200' : 'bg-slate-50'}`}>
+                      {project.incorporation_checklist?.rol_definido ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Square className="h-5 w-5 text-slate-400" />
+                      )}
+                      <span className={project.incorporation_checklist?.rol_definido ? 'text-green-800' : 'text-slate-600'}>
+                        Modalidad definida
+                      </span>
+                    </div>
+                    <div className={`flex items-center gap-3 p-4 rounded-lg ${project.incorporation_checklist?.caso_uso_definido ? 'bg-green-50 border border-green-200' : 'bg-slate-50'}`}>
+                      {project.incorporation_checklist?.caso_uso_definido ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Square className="h-5 w-5 text-slate-400" />
+                      )}
+                      <span className={project.incorporation_checklist?.caso_uso_definido ? 'text-green-800' : 'text-slate-600'}>
+                        Caso de uso definido
+                      </span>
+                    </div>
+                    <div className={`flex items-center gap-3 p-4 rounded-lg ${project.incorporation_checklist?.validacion_rgpd ? 'bg-green-50 border border-green-200' : 'bg-slate-50'}`}>
+                      {project.incorporation_checklist?.validacion_rgpd ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Square className="h-5 w-5 text-slate-400" />
+                      )}
+                      <span className={project.incorporation_checklist?.validacion_rgpd ? 'text-green-800' : 'text-slate-600'}>
+                        Validación RGPD
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Project Details Form */}
+              <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Database className="h-5 w-5 text-[#8b1530]" />
+                    Datos de Incorporación
+                  </CardTitle>
+                  <CardDescription>Completa la información del espacio de datos</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="space_name" className="flex items-center gap-2">
+                        <Database className="h-4 w-4" />
+                        Espacio de Datos
+                      </Label>
+                      <Select
+                        value={projectForm.space_name}
+                        onValueChange={(value) => updateProjectField('space_name', value)}
+                        disabled={savingProject}
+                      >
+                        <SelectTrigger data-testid="space-name-select">
+                          <SelectValue placeholder="Selecciona un espacio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Espacio de Datos Industrial">Espacio de Datos Industrial</SelectItem>
+                          <SelectItem value="Espacio de Datos Agrícola">Espacio de Datos Agrícola</SelectItem>
+                          <SelectItem value="Espacio de Datos Turismo">Espacio de Datos Turismo</SelectItem>
+                          <SelectItem value="Espacio de Datos Salud">Espacio de Datos Salud</SelectItem>
+                          <SelectItem value="Espacio de Datos Movilidad">Espacio de Datos Movilidad</SelectItem>
+                          <SelectItem value="Espacio de Datos Energía">Espacio de Datos Energía</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="target_role" className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Modalidad
+                      </Label>
+                      <Select
+                        value={projectForm.target_role}
+                        onValueChange={(value) => updateProjectField('target_role', value)}
+                        disabled={savingProject}
+                      >
+                        <SelectTrigger data-testid="target-role-select">
+                          <SelectValue placeholder="Selecciona modalidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="participante">Participante (consumidor de datos)</SelectItem>
+                          <SelectItem value="proveedor">Proveedor (aporta datos)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="use_case" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Caso de Uso
+                    </Label>
+                    <Textarea
+                      id="use_case"
+                      value={projectForm.use_case}
+                      onChange={(e) => setProjectForm(prev => ({ ...prev, use_case: e.target.value }))}
+                      onBlur={(e) => updateProjectField('use_case', e.target.value)}
+                      disabled={savingProject}
+                      data-testid="use-case-input"
+                      placeholder="Describe el caso de uso de la empresa en el espacio de datos..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-lg">
+                    <Checkbox
+                      id="rgpd_checked"
+                      checked={projectForm.rgpd_checked}
+                      onCheckedChange={(checked) => {
+                        setProjectForm(prev => ({ ...prev, rgpd_checked: checked }));
+                        updateProjectField('rgpd_checked', checked);
+                      }}
+                      disabled={savingProject}
+                      data-testid="rgpd-checkbox"
+                    />
+                    <div>
+                      <Label htmlFor="rgpd_checked" className="font-medium cursor-pointer flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-[#8b1530]" />
+                        Validación RGPD realizada
+                      </Label>
+                      <p className="text-xs text-[#64748b] mt-1">
+                        Confirma que se ha realizado la validación de cumplimiento RGPD para el tratamiento de datos
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        )}
+
         {/* Diagnóstico Tab */}
         <TabsContent value="diagnostico">
           <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
