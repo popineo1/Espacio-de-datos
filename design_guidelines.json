@@ -1,0 +1,167 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "E1_Corporate_SaaS",
+      "tone": "Professional, Authoritative, Efficient, Human",
+      "core_principle": "Wine Red is the scalpel, not the bucket. Use it for precision actions, not generic fills."
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Plus Jakarta Sans, sans-serif",
+        "body": "Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl font-bold tracking-tight lg:text-5xl",
+        "h2": "text-3xl font-semibold tracking-tight",
+        "h3": "text-2xl font-semibold tracking-tight",
+        "p": "leading-7 [&:not(:first-child)]:mt-6"
+      },
+      "imports": [
+        "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');"
+      ]
+    },
+    "colors": {
+      "palette": {
+        "background": "#f4f6fb",
+        "foreground": "#0f172a",
+        "primary": {
+          "DEFAULT": "#8b1530",
+          "foreground": "#ffffff",
+          "hover": "#701126"
+        },
+        "secondary": {
+          "DEFAULT": "#fbeff3",
+          "foreground": "#8b1530"
+        },
+        "muted": {
+          "DEFAULT": "#f1f5f9",
+          "foreground": "#64748b"
+        },
+        "accent": {
+          "DEFAULT": "#ffffff",
+          "foreground": "#0f172a"
+        },
+        "card": {
+          "DEFAULT": "#ffffff",
+          "foreground": "#0f172a"
+        },
+        "border": "#e2e8f0",
+        "input": "#e2e8f0",
+        "ring": "#8b1530"
+      },
+      "usage_rules": [
+        "NEVER use gradients for the Primary color. It must be solid, authoritative Wine Red.",
+        "Background is NOT white. It is #f4f6fb. Cards ARE white.",
+        "Use 'Soft' (#fbeff3) for active states in navigation and secondary buttons.",
+        "Text on 'Soft' background must be Primary (#8b1530), not Black."
+      ]
+    },
+    "layout": {
+      "spacing": {
+        "container_padding": "p-6 md:p-8 lg:p-12",
+        "section_gap": "gap-8",
+        "component_gap": "gap-4"
+      },
+      "grid_system": {
+        "dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6",
+        "card_grid": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      },
+      "radius": {
+        "default": "0.75rem",
+        "sm": "0.5rem",
+        "lg": "1rem"
+      }
+    },
+    "components": {
+      "buttons": {
+        "primary": "bg-[#8b1530] text-white hover:bg-[#701126] shadow-md hover:shadow-lg transition-all duration-200 font-medium px-6 py-2.5 rounded-lg",
+        "secondary": "bg-[#fbeff3] text-[#8b1530] hover:bg-[#f0dce4] border border-[#fbeff3] hover:border-[#eeccd9] transition-all duration-200 font-medium px-6 py-2.5 rounded-lg",
+        "ghost": "hover:bg-slate-100 text-slate-700 hover:text-slate-900"
+      },
+      "cards": {
+        "base": "bg-white border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-shadow duration-300 rounded-xl p-6"
+      },
+      "inputs": {
+        "base": "flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b1530] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      },
+      "banner": {
+        "style": "fixed top-0 left-0 right-0 z-50 bg-[#8b1530] text-white text-sm font-medium py-2 px-4 text-center shadow-sm",
+        "content": "Primero se ejecuta la incorporación al espacio de datos. Después se solicita la ayuda para subvencionar esos costes."
+      },
+      "whatsapp_float": {
+        "style": "fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20bd5a] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center justify-center",
+        "icon_size": "h-6 w-6"
+      }
+    },
+    "visual_enhancers": {
+      "shadows": {
+        "soft": "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+        "hover": "0 10px 25px -5px rgba(139, 21, 48, 0.15)"
+      },
+      "glass": "bg-white/80 backdrop-blur-md border border-white/20",
+      "animation": {
+        "hover_lift": "transition-transform duration-200 hover:-translate-y-1",
+        "fade_in": "animate-in fade-in duration-500"
+      }
+    },
+    "assets": {
+      "images": {
+        "avatars": [
+          {
+            "url": "https://images.unsplash.com/photo-1589668944320-409833e5ba10?crop=entropy&cs=srgb&fm=jpg&q=85",
+            "category": "admin_avatar",
+            "description": "Professional man in white shirt"
+          },
+          {
+            "url": "https://images.unsplash.com/photo-1659353221237-6a1cfb73fd90?crop=entropy&cs=srgb&fm=jpg&q=85",
+            "category": "client_avatar",
+            "description": "Professional man in suit"
+          },
+          {
+            "url": "https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg",
+            "category": "advisor_avatar",
+            "description": "Professional woman"
+          }
+        ],
+        "backgrounds": [
+          {
+            "url": "https://images.pexels.com/photos/12149152/pexels-photo-12149152.jpeg",
+            "category": "login_bg",
+            "description": "Minimalist architectural white geometric"
+          }
+        ]
+      }
+    },
+    "instructions_to_main_agent": {
+      "setup": [
+        "Configure tailwind.config.js with the specific color palette provided.",
+        "Install 'lucide-react' for icons if not present.",
+        "Ensure 'react-router-dom' is set up with a Layout component that includes the Fixed Banner and WhatsApp button.",
+        "Create a 'ProtectedLayout' component that handles RBAC redirection."
+      ],
+      "routing": [
+        "Use standard React Router v6/v7 <Routes> and <Route>.",
+        "Define routes: /login, /admin, /asesor, /cliente, /unauthorized.",
+        "Redirect root (/) to /login."
+      ],
+      "styling": [
+        "Apply the 'Plus Jakarta Sans' font to all headings.",
+        "Apply 'Inter' to body text.",
+        "Ensure the Banner is visible on ALL pages (including Login).",
+        "Use the 'Soft' color (#fbeff3) for sidebar active states or card accents."
+      ],
+      "functionality": [
+        "Mock the JWT authentication context.",
+        "Create a 'UserContext' that stores { role: 'admin' | 'asesor' | 'cliente', name: string }.",
+        "Implement a simple login form that accepts any email but checks specific passwords for roles (e.g., 'admin123' -> admin role) for demo purposes."
+      ]
+    },
+    "universal_guidelines": [
+      "Do not use gradients for the Primary color.",
+      "Always use the specific hex codes provided.",
+      "Ensure high contrast for text.",
+      "Add data-testid to all interactive elements."
+    ]
+  }
+}
