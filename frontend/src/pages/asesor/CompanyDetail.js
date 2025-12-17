@@ -100,17 +100,19 @@ const CompanyDetail = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [companyRes, diagnosticRes, projectRes, userRes] = await Promise.all([
+      const [companyRes, diagnosticRes, projectRes, userRes, intakeRes] = await Promise.all([
         axios.get(`${API_URL}/companies/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/companies/${id}/diagnostic`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/companies/${id}/project`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null })),
-        axios.get(`${API_URL}/companies/${id}/user`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }))
+        axios.get(`${API_URL}/companies/${id}/user`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null })),
+        axios.get(`${API_URL}/companies/${id}/intake`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }))
       ]);
       
       setCompany(companyRes.data);
       setDiagnostic(diagnosticRes.data);
       setProject(projectRes.data);
       setCompanyUser(userRes.data);
+      setIntake(intakeRes.data);
       
       // Initialize project form if project exists
       if (projectRes.data) {
