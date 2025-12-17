@@ -644,6 +644,29 @@ async def decide_diagnostic(
     return response
 
 # ==================== PROJECT ROUTES ====================
+def build_project_response(project: dict) -> ProjectResponse:
+    """Build ProjectResponse with proper checklist handling"""
+    checklist = project.get("incorporation_checklist", {})
+    return ProjectResponse(
+        id=project["id"],
+        company_id=project["company_id"],
+        title=project["title"],
+        phase=project["phase"],
+        status=project["status"],
+        target_role=project.get("target_role"),
+        space_name=project.get("space_name"),
+        use_case=project.get("use_case"),
+        rgpd_checked=project.get("rgpd_checked", False),
+        incorporation_status=project.get("incorporation_status", "pendiente"),
+        incorporation_checklist=IncorporationChecklist(
+            espacio_seleccionado=checklist.get("espacio_seleccionado", False),
+            rol_definido=checklist.get("rol_definido", False),
+            caso_uso_definido=checklist.get("caso_uso_definido", False),
+            validacion_rgpd=checklist.get("validacion_rgpd", False)
+        ),
+        created_at=project["created_at"]
+    )
+
 @api_router.get("/companies/{company_id}/project", response_model=Optional[ProjectResponse])
 async def get_company_project(
     company_id: str,
@@ -660,7 +683,67 @@ async def get_company_project(
     if not project:
         return None
     
-    return ProjectResponse(**project)
+    return build_project_response(project)
+
+@api_router.put("/companies/{company_id}/project", response_model=ProjectResponse)
+async def update_company_project(
+    company_id: str,
+    project_data: ProjectUpdate,
+    current_user: dict = Depends(require_role(["admin", "asesor"]))
+):
+    project = await db.projects.find_one({"company_id": company_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    
+    update_data = {}
+    checklist = project.get("incorporation_checklist", {
+        "espacio_seleccionado": False,
+        "rol_definido": False,
+        "caso_uso_definido": False,
+        "validacion_rgpd": False
+    })
+    
+    # Update fields and auto-update checklist
+    if project_data.space_name is not None:
+        update_data["space_name"] = project_data.space_name
+        checklist["espacio_seleccionado"] = bool(project_data.space_name and project_data.space_name.strip())
+    
+    if project_data.target_role is not None:
+        update_data["target_role"] = project_data.target_role
+        checklist["rol_definido"] = bool(project_data.target_role)
+    
+    if project_data.use_case is not None:
+        update_data["use_case"] = project_data.use_case
+        checklist["caso_uso_definido"] = bool(project_data.use_case and project_data.use_case.strip())
+    
+    if project_data.rgpd_checked is not None:
+        update_data["rgpd_checked"] = project_data.rgpd_checked
+        checklist["validacion_rgpd"] = project_data.rgpd_checked
+    
+    update_data["incorporation_checklist"] = checklist
+    
+    # Handle incorporation status
+    if project_data.incorporation_status is not None:
+        # Can only mark as completed if all checklist items are true
+        if project_data.incorporation_status == "completada":
+            all_checked = all([
+                checklist["espacio_seleccionado"],
+                checklist["rol_definido"],
+                checklist["caso_uso_definido"],
+                checklist["validacion_rgpd"]
+            ])
+            if not all_checked:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Para completar la incorporación faltan pasos del checklist."
+                )
+        update_data["incorporation_status"] = project_data.incorporation_status
+    
+    if update_data:
+        await db.projects.update_one({"company_id": company_id}, {"$set": update_data})
+    
+    updated = await db.projects.find_one({"company_id": company_id}, {"_id": 0})
+    return build_project_response(updated)
 
 @api_router.get("/projects", response_model=List[ProjectResponse])
 async def list_projects(
@@ -670,13 +753,13 @@ async def list_projects(
         if not current_user.get("company_id"):
             return []
         project = await db.projects.find_one({"company_id": current_user["company_id"]}, {"_id": 0})
-        return [ProjectResponse(**project)] if project else []
+        return [build_project_response(project)] if project else []
     
     if current_user.get("role") not in ["admin", "asesor"]:
         raise HTTPException(status_code=403, detail="No autorizado")
     
     projects = await db.projects.find({}, {"_id": 0}).to_list(1000)
-    return [ProjectResponse(**p) for p in projects]
+    return [build_project_response(p) for p in projects]
 
 # ==================== CLIENT DASHBOARD ====================
 @api_router.get("/client/dashboard")
