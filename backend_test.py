@@ -140,54 +140,36 @@ def main():
 
     print(f"✅ Found {len(companies)} companies")
     
-    # Find TechData company
-    techdata_company = None
+    # Find Demo Cuestionario company (lead status)
+    demo_company = None
     for company in companies:
-        if 'TechData' in company.get('name', ''):
-            techdata_company = company
+        if 'Demo Cuestionario' in company.get('name', ''):
+            demo_company = company
             break
     
-    if not techdata_company:
-        print("❌ TechData company not found")
+    if not demo_company:
+        print("❌ Demo Cuestionario company not found")
         return 1
     
-    print(f"✅ Found TechData: {techdata_company['name']} - Status: {techdata_company['status']}")
+    print(f"✅ Found Demo Cuestionario: {demo_company['name']} - Status: {demo_company['status']}")
     
-    # Test project access
-    success, project = tester.test_get_company_project(techdata_company['id'])
-    if success and project:
-        print(f"✅ TechData has project: {project.get('title', 'Unknown')}")
-        print(f"   - Phase: {project.get('phase', 'Unknown')}")
-        print(f"   - Incorporation Status: {project.get('incorporation_status', 'Unknown')}")
-        print(f"   - Space Name: {project.get('space_name', 'Not set')}")
-        print(f"   - Target Role: {project.get('target_role', 'Not set')}")
-        print(f"   - Use Case: {project.get('use_case', 'Not set')}")
-        print(f"   - RGPD Checked: {project.get('rgpd_checked', False)}")
-        
-        # Test project update
-        update_data = {
-            "space_name": "Espacio de Datos Industrial",
-            "target_role": "participante",
-            "use_case": "Compartir datos de tecnología para optimización",
-            "rgpd_checked": True
-        }
-        
-        success, updated_project = tester.test_update_project(techdata_company['id'], update_data)
-        if success:
-            print("✅ Project updated successfully")
-            print(f"   - Checklist: {updated_project.get('incorporation_checklist', {})}")
-        else:
-            print("❌ Failed to update project")
+    # Test intake functionality with asesor credentials
+    print("\n=== Testing Intake API (Asesor) ===")
+    
+    # Get intake (should be empty initially)
+    success, intake = tester.test_get_intake(demo_company['id'])
+    if success:
+        print(f"✅ Intake API accessible - Submitted: {intake.get('submitted', False) if intake else 'No intake'}")
     else:
-        print("❌ TechData project not found or accessible")
+        print("❌ Failed to access intake API")
 
-    # Test cliente login
-    print("\n=== Testing Cliente API Access ===")
+    # Test cliente cuestionario login
+    print("\n=== Testing Cliente Cuestionario API Access ===")
     
     cliente_tester = SimpleAPITester()
-    success, cliente_response = cliente_tester.test_login("cliente.lead@espaciodatos.com", "cliente123")
+    success, cliente_response = cliente_tester.test_login("cliente.cuestionario@espaciodatos.com", "cliente123")
     if success:
-        print(f"✅ TechData cliente logged in: {cliente_response.get('user', {}).get('name', 'Unknown')}")
+        print(f"✅ Cliente cuestionario logged in: {cliente_response.get('user', {}).get('name', 'Unknown')}")
         
         # Test dashboard access
         success, dashboard = cliente_tester.run_test(
@@ -198,14 +180,96 @@ def main():
         )
         if success:
             print(f"✅ Cliente dashboard accessible - Status: {dashboard.get('status', 'Unknown')}")
+            print(f"   - Company Status: {dashboard.get('company', {}).get('status', 'Unknown')}")
+            print(f"   - Intake Status: {dashboard.get('company', {}).get('intake_status', 'Unknown')}")
         else:
             print("❌ Cliente dashboard not accessible")
+            
+        # Test intake creation
+        print("\n=== Testing Intake Creation ===")
+        
+        intake_data = {
+            "data_types": ["operativos", "comerciales"],
+            "data_usage": "reporting",
+            "main_interests": ["mejorar_procesos", "acceder_datos_externos"],
+            "data_sensitivity": "media",
+            "notes": "Empresa interesada en compartir datos operativos"
+        }
+        
+        success, created_intake = cliente_tester.test_create_intake(demo_company['id'], intake_data)
+        if success:
+            print("✅ Intake created successfully")
+            print(f"   - Data Types: {created_intake.get('data_types', [])}")
+            print(f"   - Data Usage: {created_intake.get('data_usage', 'Unknown')}")
+            print(f"   - Submitted: {created_intake.get('submitted', False)}")
+        else:
+            print("❌ Failed to create intake")
+            
+        # Test intake submission
+        print("\n=== Testing Intake Submission ===")
+        
+        success, submitted_intake = cliente_tester.test_submit_intake(demo_company['id'])
+        if success:
+            print("✅ Intake submitted successfully")
+            print(f"   - Submitted: {submitted_intake.get('submitted', False)}")
+            print(f"   - Submitted At: {submitted_intake.get('submitted_at', 'Unknown')}")
+        else:
+            print("❌ Failed to submit intake")
+            
+        # Test that client cannot edit after submission
+        print("\n=== Testing Post-Submission Restrictions ===")
+        
+        success, _ = cliente_tester.test_create_intake(demo_company['id'], {"notes": "Should not work"})
+        if not success:
+            print("✅ Client correctly prevented from editing after submission")
+        else:
+            print("❌ Client was able to edit after submission (should be blocked)")
+            
     else:
-        print("❌ Cliente login failed")
+        print("❌ Cliente cuestionario login failed")
+
+    # Test cliente apta (should NOT see questionnaire)
+    print("\n=== Testing Cliente Apta (Should NOT see questionnaire) ===")
+    
+    cliente_apta_tester = SimpleAPITester()
+    success, apta_response = cliente_apta_tester.test_login("cliente.apta@espaciodatos.com", "cliente123")
+    if success:
+        print(f"✅ Cliente apta logged in: {apta_response.get('user', {}).get('name', 'Unknown')}")
+        
+        # Test dashboard access
+        success, dashboard = cliente_apta_tester.run_test(
+            "Cliente Apta Dashboard",
+            "GET",
+            "client/dashboard",
+            200
+        )
+        if success:
+            print(f"✅ Cliente apta dashboard accessible - Status: {dashboard.get('status', 'Unknown')}")
+            print(f"   - Company Status: {dashboard.get('company', {}).get('status', 'Unknown')}")
+            has_intake = 'intake' in dashboard
+            print(f"   - Has Intake in Dashboard: {has_intake} (should be False for apta)")
+        else:
+            print("❌ Cliente apta dashboard not accessible")
+    else:
+        print("❌ Cliente apta login failed")
+
+    # Test asesor can see submitted intake
+    print("\n=== Testing Asesor Can View Submitted Intake ===")
+    
+    success, final_intake = tester.test_get_intake(demo_company['id'])
+    if success and final_intake:
+        print("✅ Asesor can view submitted intake")
+        print(f"   - Data Types: {final_intake.get('data_types', [])}")
+        print(f"   - Main Interests: {final_intake.get('main_interests', [])}")
+        print(f"   - Submitted: {final_intake.get('submitted', False)}")
+    else:
+        print("❌ Asesor cannot view intake or intake not found")
 
     # Print results
-    print(f"\n📊 Tests passed: {tester.tests_passed + cliente_tester.tests_passed}/{tester.tests_run + cliente_tester.tests_run}")
-    return 0 if (tester.tests_passed + cliente_tester.tests_passed) == (tester.tests_run + cliente_tester.tests_run) else 1
+    total_passed = tester.tests_passed + cliente_tester.tests_passed + cliente_apta_tester.tests_passed
+    total_run = tester.tests_run + cliente_tester.tests_run + cliente_apta_tester.tests_run
+    print(f"\n📊 Tests passed: {total_passed}/{total_run}")
+    return 0 if total_passed == total_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
