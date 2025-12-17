@@ -385,6 +385,7 @@ async def create_company(
         "contact_role": company_data.contact_role,
         "contact_phone": company_data.contact_phone,
         "status": "lead",
+        "intake_status": "pendiente",
         "created_at": now,
         "updated_at": now
     }
