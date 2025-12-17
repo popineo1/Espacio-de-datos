@@ -274,6 +274,326 @@ class EspacioDatosAPITester:
             token=self.admin_token
         )
 
+    # ==================== CRM COMPANY TESTS ====================
+    
+    def test_seed_demo_companies(self):
+        """Seed demo companies and cliente users"""
+        if not self.asesor_token:
+            self.log_test("Seed Demo Companies", False, "No asesor token available")
+            return False
+        return self.run_test("Seed Demo Companies", "POST", "seed-demo-companies", 200, token=self.asesor_token)
+
+    def test_create_company_asesor(self):
+        """Test creating company as asesor"""
+        if not self.asesor_token:
+            self.log_test("Create Company (Asesor)", False, "No asesor token available")
+            return False
+        
+        company_data = {
+            "name": f"Test Company {datetime.now().strftime('%H%M%S')}",
+            "nif": f"B{datetime.now().strftime('%H%M%S')}99",
+            "sector": "Tecnología",
+            "size_range": "11-50",
+            "country": "España",
+            "contact_name": "Test Contact",
+            "contact_role": "CEO",
+            "contact_phone": "+34 600 000 000"
+        }
+        
+        success, response = self.run_test(
+            "Create Company (Asesor)",
+            "POST",
+            "companies",
+            200,
+            data=company_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            self.test_company_id = response.get('id')
+            # Verify company starts with 'lead' status
+            if response.get('status') == 'lead':
+                self.log_test("Company Initial Status (lead)", True)
+            else:
+                self.log_test("Company Initial Status (lead)", False, f"Expected 'lead', got '{response.get('status')}'")
+        
+        return success
+
+    def test_create_company_cliente(self):
+        """Test creating company as cliente (should fail)"""
+        if not self.cliente_token:
+            self.log_test("Create Company (Cliente - Should Fail)", False, "No cliente token available")
+            return False
+        
+        company_data = {
+            "name": "Unauthorized Company",
+            "nif": "B99999999",
+            "sector": "Test"
+        }
+        
+        return self.run_test(
+            "Create Company (Cliente - Should Fail)",
+            "POST",
+            "companies",
+            403,
+            data=company_data,
+            token=self.cliente_token
+        )
+
+    def test_list_companies_asesor(self):
+        """Test listing companies as asesor"""
+        if not self.asesor_token:
+            self.log_test("List Companies (Asesor)", False, "No asesor token available")
+            return False
+        return self.run_test("List Companies (Asesor)", "GET", "companies", 200, token=self.asesor_token)
+
+    def test_list_companies_with_filters(self):
+        """Test listing companies with status filter"""
+        if not self.asesor_token:
+            self.log_test("List Companies with Filter", False, "No asesor token available")
+            return False
+        return self.run_test("List Companies with Filter", "GET", "companies?status=lead", 200, token=self.asesor_token)
+
+    def test_get_company_detail_asesor(self):
+        """Test getting company detail as asesor"""
+        if not self.asesor_token or not hasattr(self, 'test_company_id'):
+            self.log_test("Get Company Detail (Asesor)", False, "No asesor token or test company available")
+            return False
+        return self.run_test("Get Company Detail (Asesor)", "GET", f"companies/{self.test_company_id}", 200, token=self.asesor_token)
+
+    # ==================== DIAGNOSTIC TESTS ====================
+    
+    def test_get_diagnostic(self):
+        """Test getting diagnostic for company"""
+        if not self.asesor_token or not hasattr(self, 'test_company_id'):
+            self.log_test("Get Diagnostic", False, "No asesor token or test company available")
+            return False
+        
+        success, response = self.run_test("Get Diagnostic", "GET", f"companies/{self.test_company_id}/diagnostic", 200, token=self.asesor_token)
+        
+        if success:
+            # Verify initial diagnostic state
+            if response.get('result') == 'pendiente':
+                self.log_test("Diagnostic Initial State (pendiente)", True)
+            else:
+                self.log_test("Diagnostic Initial State (pendiente)", False, f"Expected 'pendiente', got '{response.get('result')}'")
+        
+        return success
+
+    def test_update_diagnostic(self):
+        """Test updating diagnostic fields"""
+        if not self.asesor_token or not hasattr(self, 'test_company_id'):
+            self.log_test("Update Diagnostic", False, "No asesor token or test company available")
+            return False
+        
+        update_data = {
+            "eligibility_ok": True,
+            "space_identified": True,
+            "data_potential": True,
+            "legal_risk": "bajo",
+            "notes": "Test diagnostic notes"
+        }
+        
+        return self.run_test(
+            "Update Diagnostic",
+            "PUT",
+            f"companies/{self.test_company_id}/diagnostic",
+            200,
+            data=update_data,
+            token=self.asesor_token
+        )
+
+    def test_decide_diagnostic_apta(self):
+        """Test marking company as APTA"""
+        if not self.asesor_token or not hasattr(self, 'test_company_id'):
+            self.log_test("Decide Diagnostic APTA", False, "No asesor token or test company available")
+            return False
+        
+        decision_data = {"result": "apta"}
+        
+        success, response = self.run_test(
+            "Decide Diagnostic APTA",
+            "POST",
+            f"companies/{self.test_company_id}/diagnostic/decide",
+            200,
+            data=decision_data,
+            token=self.asesor_token
+        )
+        
+        if success:
+            # Verify diagnostic result changed
+            if response.get('result') == 'apta':
+                self.log_test("Diagnostic Result Changed to APTA", True)
+            else:
+                self.log_test("Diagnostic Result Changed to APTA", False, f"Expected 'apta', got '{response.get('result')}'")
+        
+        return success
+
+    def test_company_status_after_apta(self):
+        """Test that company status changed to 'apta' after decision"""
+        if not self.asesor_token or not hasattr(self, 'test_company_id'):
+            self.log_test("Company Status After APTA", False, "No asesor token or test company available")
+            return False
+        
+        success, response = self.run_test("Company Status After APTA", "GET", f"companies/{self.test_company_id}", 200, token=self.asesor_token)
+        
+        if success:
+            if response.get('status') == 'apta':
+                self.log_test("Company Status Updated to APTA", True)
+            else:
+                self.log_test("Company Status Updated to APTA", False, f"Expected 'apta', got '{response.get('status')}'")
+        
+        return success
+
+    def test_project_created_after_apta(self):
+        """Test that project was created after marking company as APTA"""
+        if not self.asesor_token or not hasattr(self, 'test_company_id'):
+            self.log_test("Project Created After APTA", False, "No asesor token or test company available")
+            return False
+        
+        success, response = self.run_test("Project Created After APTA", "GET", f"companies/{self.test_company_id}/project", 200, token=self.asesor_token)
+        
+        if success and response:
+            # Verify project details
+            if response.get('phase') == 2:
+                self.log_test("Project Phase 2", True)
+            else:
+                self.log_test("Project Phase 2", False, f"Expected phase 2, got {response.get('phase')}")
+            
+            if response.get('status') == 'iniciado':
+                self.log_test("Project Status Iniciado", True)
+            else:
+                self.log_test("Project Status Iniciado", False, f"Expected 'iniciado', got '{response.get('status')}'")
+        
+        return success
+
+    # ==================== CLIENT TESTS ====================
+    
+    def test_login_cliente_lead(self):
+        """Test login for cliente with lead company"""
+        success, response = self.run_test(
+            "Cliente Lead Login",
+            "POST",
+            "auth/login",
+            200,
+            data={"email": "cliente.lead@espaciodatos.com", "password": "cliente123"}
+        )
+        if success and 'token' in response:
+            self.cliente_lead_token = response['token']
+        return success
+
+    def test_login_cliente_apta(self):
+        """Test login for cliente with apta company"""
+        success, response = self.run_test(
+            "Cliente Apta Login",
+            "POST",
+            "auth/login",
+            200,
+            data={"email": "cliente.apta@espaciodatos.com", "password": "cliente123"}
+        )
+        if success and 'token' in response:
+            self.cliente_apta_token = response['token']
+        return success
+
+    def test_login_cliente_descartada(self):
+        """Test login for cliente with descartada company"""
+        success, response = self.run_test(
+            "Cliente Descartada Login",
+            "POST",
+            "auth/login",
+            200,
+            data={"email": "cliente.descartada@espaciodatos.com", "password": "cliente123"}
+        )
+        if success and 'token' in response:
+            self.cliente_descartada_token = response['token']
+        return success
+
+    def test_client_dashboard_lead(self):
+        """Test client dashboard for lead status"""
+        if not hasattr(self, 'cliente_lead_token'):
+            self.log_test("Client Dashboard Lead", False, "No cliente lead token available")
+            return False
+        
+        success, response = self.run_test("Client Dashboard Lead", "GET", "client/dashboard", 200, token=self.cliente_lead_token)
+        
+        if success:
+            if response.get('status') == 'en_evaluacion':
+                self.log_test("Client Dashboard Lead Status", True)
+            else:
+                self.log_test("Client Dashboard Lead Status", False, f"Expected 'en_evaluacion', got '{response.get('status')}'")
+        
+        return success
+
+    def test_client_dashboard_apta(self):
+        """Test client dashboard for apta status"""
+        if not hasattr(self, 'cliente_apta_token'):
+            self.log_test("Client Dashboard Apta", False, "No cliente apta token available")
+            return False
+        
+        success, response = self.run_test("Client Dashboard Apta", "GET", "client/dashboard", 200, token=self.cliente_apta_token)
+        
+        if success:
+            if response.get('status') == 'apta':
+                self.log_test("Client Dashboard Apta Status", True)
+            else:
+                self.log_test("Client Dashboard Apta Status", False, f"Expected 'apta', got '{response.get('status')}'")
+            
+            # Check if project info is included
+            if response.get('project'):
+                self.log_test("Client Dashboard Apta Project Info", True)
+            else:
+                self.log_test("Client Dashboard Apta Project Info", False, "No project info in dashboard")
+        
+        return success
+
+    def test_client_dashboard_descartada(self):
+        """Test client dashboard for descartada status"""
+        if not hasattr(self, 'cliente_descartada_token'):
+            self.log_test("Client Dashboard Descartada", False, "No cliente descartada token available")
+            return False
+        
+        success, response = self.run_test("Client Dashboard Descartada", "GET", "client/dashboard", 200, token=self.cliente_descartada_token)
+        
+        if success:
+            if response.get('status') == 'no_apta':
+                self.log_test("Client Dashboard Descartada Status", True)
+            else:
+                self.log_test("Client Dashboard Descartada Status", False, f"Expected 'no_apta', got '{response.get('status')}'")
+        
+        return success
+
+    def test_client_access_control(self):
+        """Test that cliente can only access their own company"""
+        if not hasattr(self, 'cliente_lead_token') or not hasattr(self, 'test_company_id'):
+            self.log_test("Client Access Control", False, "No cliente token or test company available")
+            return False
+        
+        # Try to access another company (should fail)
+        return self.run_test(
+            "Client Access Control (Should Fail)",
+            "GET",
+            f"companies/{self.test_company_id}",
+            403,
+            token=self.cliente_lead_token
+        )
+
+    def test_list_companies_cliente(self):
+        """Test that cliente only sees their own company"""
+        if not hasattr(self, 'cliente_lead_token'):
+            self.log_test("List Companies Cliente", False, "No cliente token available")
+            return False
+        
+        success, response = self.run_test("List Companies Cliente", "GET", "companies", 200, token=self.cliente_lead_token)
+        
+        if success:
+            # Should only return one company (their own)
+            if len(response) == 1:
+                self.log_test("Cliente Sees Only Own Company", True)
+            else:
+                self.log_test("Cliente Sees Only Own Company", False, f"Expected 1 company, got {len(response)}")
+        
+        return success
+
 def main():
     print("🚀 Starting Espacio de Datos API Tests")
     print("=" * 50)
