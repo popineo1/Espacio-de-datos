@@ -139,6 +139,19 @@ class DiagnosticDecision(BaseModel):
     result: Literal["apta", "no_apta"]
 
 # ==================== PROJECT MODELS ====================
+class IncorporationChecklist(BaseModel):
+    espacio_seleccionado: bool = False
+    rol_definido: bool = False
+    caso_uso_definido: bool = False
+    validacion_rgpd: bool = False
+
+class ProjectUpdate(BaseModel):
+    space_name: Optional[str] = None
+    target_role: Optional[Literal["participante", "proveedor"]] = None
+    use_case: Optional[str] = None
+    rgpd_checked: Optional[bool] = None
+    incorporation_status: Optional[Literal["pendiente", "en_progreso", "completada"]] = None
+
 class ProjectResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
@@ -147,6 +160,11 @@ class ProjectResponse(BaseModel):
     phase: int
     status: str
     target_role: Optional[str] = None
+    space_name: Optional[str] = None
+    use_case: Optional[str] = None
+    rgpd_checked: bool = False
+    incorporation_status: str = "pendiente"
+    incorporation_checklist: IncorporationChecklist = IncorporationChecklist()
     created_at: str
 
 # ==================== HELPER FUNCTIONS ====================
@@ -605,6 +623,16 @@ async def decide_diagnostic(
             "phase": 2,
             "status": "iniciado",
             "target_role": None,
+            "space_name": None,
+            "use_case": None,
+            "rgpd_checked": False,
+            "incorporation_status": "pendiente",
+            "incorporation_checklist": {
+                "espacio_seleccionado": False,
+                "rol_definido": False,
+                "caso_uso_definido": False,
+                "validacion_rgpd": False
+            },
             "created_at": now
         }
         await db.projects.insert_one(project_doc)
@@ -836,7 +864,17 @@ async def seed_demo_companies(current_user: dict = Depends(require_role(["admin"
                     "title": f"Incorporación - {company['name']}",
                     "phase": 2,
                     "status": "iniciado",
-                    "target_role": None,
+                    "target_role": "participante",
+                    "space_name": "Espacio de Datos Industrial",
+                    "use_case": "Compartir datos de producción para optimización de procesos industriales.",
+                    "rgpd_checked": True,
+                    "incorporation_status": "en_progreso",
+                    "incorporation_checklist": {
+                        "espacio_seleccionado": True,
+                        "rol_definido": True,
+                        "caso_uso_definido": True,
+                        "validacion_rgpd": True
+                    },
                     "created_at": now
                 }
                 await db.projects.insert_one(project)
