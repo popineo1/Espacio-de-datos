@@ -8,9 +8,10 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Loader2, Mail, Lock, AlertCircle, ArrowRight, Shield, CheckCircle2, FileCheck } from 'lucide-react';
 
 const Login = () => {
+  const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,7 +27,6 @@ const Login = () => {
     try {
       const user = await login(email, password);
       
-      // Redirect based on role
       if (user.role === 'admin') {
         navigate('/admin');
       } else if (user.role === 'asesor') {
@@ -43,35 +43,143 @@ const Login = () => {
     }
   };
 
+  // Landing Page View
+  if (!showLogin) {
+    return (
+      <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
+        <Banner />
+        
+        <div className="flex-1 pt-[42px]">
+          {/* Hero Section */}
+          <section className="py-16 md:py-24 px-4">
+            <div className="max-w-5xl mx-auto">
+              {/* Logo and Brand */}
+              <div className="text-center mb-12">
+                <img 
+                  src="https://customer-assets.emergentagent.com/job_auth-foundation-1/artifacts/gbgikawn_logo.png" 
+                  alt="Tu Administrativo" 
+                  className="h-24 md:h-32 mx-auto mb-8"
+                />
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#0f172a] tracking-tight mb-4">
+                  Espacio de Datos
+                </h1>
+                <p className="text-lg md:text-xl text-[#64748b] max-w-2xl mx-auto">
+                  Incorporación real a espacios de datos · Evaluación profesional · Opción de subvención
+                </p>
+              </div>
+
+              {/* CTA Button */}
+              <div className="text-center mb-16">
+                <Button
+                  onClick={() => setShowLogin(true)}
+                  data-testid="access-platform-btn"
+                  className="bg-[#8b1530] hover:bg-[#701126] text-white px-8 py-6 text-lg font-medium rounded-lg gap-2 shadow-lg hover:shadow-xl transition-all"
+                >
+                  Acceder a la plataforma
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* Key Messages */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {/* Message 1 - Principal */}
+                <Card className="border-0 shadow-[0_4px_20px_rgba(139,21,48,0.08)] bg-white col-span-1 md:col-span-2">
+                  <CardContent className="p-6 md:p-8">
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-[#fbeff3] flex items-center justify-center flex-shrink-0">
+                        <Shield className="h-6 w-6 text-[#8b1530]" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl md:text-2xl font-bold text-[#0f172a] mb-2">
+                          Esto no es un kit ni una ayuda automática.
+                        </h3>
+                        <p className="text-[#64748b]">
+                          Plataforma profesional para empresas que quieren hacer las cosas bien.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Message 2 */}
+                <Card className="border-0 shadow-[0_2px_12px_rgba(0,0,0,0.04)] bg-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="h-10 w-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[#0f172a] mb-1">Paso 1</p>
+                        <p className="text-[#64748b] text-sm">
+                          Primero se ejecuta la incorporación real al espacio de datos.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Message 3 */}
+                <Card className="border-0 shadow-[0_2px_12px_rgba(0,0,0,0.04)] bg-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                        <FileCheck className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[#0f172a] mb-1">Paso 2</p>
+                        <p className="text-[#64748b] text-sm">
+                          Después, si procede, se solicita la subvención para cubrir esos costes.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+
+          {/* Footer */}
+          <footer className="py-8 border-t border-slate-200 bg-white">
+            <div className="max-w-5xl mx-auto px-4 text-center">
+              <p className="text-sm text-[#64748b]">
+                © {new Date().getFullYear()} Tu Administrativo · Servicios administrativos on line
+              </p>
+            </div>
+          </footer>
+        </div>
+
+        <WhatsAppButton />
+      </div>
+    );
+  }
+
+  // Login Form View
   return (
     <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
       <Banner />
       
-      <div 
-        className="flex-1 flex items-center justify-center p-4 pt-16"
-        style={{
-          backgroundImage: 'url(https://images.pexels.com/photos/12149152/pexels-photo-12149152.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-[#f4f6fb]/90" />
-        
+      <div className="flex-1 flex items-center justify-center p-4 pt-16">
         <Card 
           data-testid="login-card"
-          className="w-full max-w-md relative z-10 shadow-xl border-0 bg-white/95 backdrop-blur-sm"
+          className="w-full max-w-md shadow-xl border-0 bg-white"
         >
           <CardHeader className="space-y-1 text-center pb-6">
-            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-[#fbeff3] flex items-center justify-center">
-              <div className="h-10 w-10 rounded-full bg-[#8b1530] flex items-center justify-center">
-                <span className="text-white font-bold text-lg">ED</span>
-              </div>
-            </div>
+            <button 
+              onClick={() => setShowLogin(false)}
+              className="absolute top-4 left-4 text-[#64748b] hover:text-[#0f172a] text-sm flex items-center gap-1"
+            >
+              ← Volver
+            </button>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_auth-foundation-1/artifacts/gbgikawn_logo.png" 
+              alt="Tu Administrativo" 
+              className="h-16 mx-auto mb-4"
+            />
             <CardTitle className="text-2xl font-bold text-[#0f172a]">
-              Espacio de Datos
+              Acceso a la plataforma
             </CardTitle>
             <CardDescription className="text-[#64748b]">
-              Inicia sesión para acceder a tu panel
+              Introduce tus credenciales para acceder
             </CardDescription>
           </CardHeader>
           
@@ -134,27 +242,6 @@ const Login = () => {
                 )}
               </Button>
             </form>
-
-            <div className="mt-6 pt-6 border-t border-slate-100">
-              <p className="text-xs text-center text-[#64748b] mb-3">Usuarios de demostración:</p>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="bg-slate-50 rounded-lg p-2 text-center">
-                  <p className="font-medium text-[#0f172a]">Admin</p>
-                  <p className="text-[#64748b]">admin123</p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-2 text-center">
-                  <p className="font-medium text-[#0f172a]">Asesor</p>
-                  <p className="text-[#64748b]">asesor123</p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-2 text-center">
-                  <p className="font-medium text-[#0f172a]">Cliente</p>
-                  <p className="text-[#64748b]">cliente123</p>
-                </div>
-              </div>
-              <p className="text-xs text-center text-[#64748b] mt-2">
-                Email: [rol]@espaciodatos.com
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
