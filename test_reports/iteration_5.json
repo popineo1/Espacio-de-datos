@@ -1,0 +1,49 @@
+{
+  "summary": "Completed comprehensive testing of data context questionnaire feature for lead companies. All backend APIs and frontend functionality working correctly. Cliente cuestionario can fill and submit questionnaire, cliente apta correctly does NOT see questionnaire, and asesor can view submitted data in Diagnóstico tab.",
+  
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "Demo Cuestionario S.L. company exists with lead status",
+    "Cliente cuestionario login and dashboard access working",
+    "Questionnaire visible only for lead status companies",
+    "Questionnaire form has all required fields (data_types checkboxes, data_usage radio, main_interests checkboxes, data_sensitivity radio, notes textarea)",
+    "Intake creation API (POST /api/companies/{id}/intake) working correctly",
+    "Intake submission API (POST /api/companies/{id}/intake/submit) working correctly",
+    "After submission: submitted=true, Company.intakeStatus='recibida'",
+    "Client cannot edit questionnaire after submission (400 error returned correctly)",
+    "Questionnaire shows read-only view after submission with 'Enviado' badge",
+    "Confirmation message 'Gracias. Nuestro equipo está evaluando la viabilidad' displayed correctly",
+    "Cliente apta does NOT see questionnaire (shows incorporation section instead)",
+    "Cliente descartada does NOT see questionnaire",
+    "Asesor can access Demo Cuestionario company details",
+    "Asesor sees 'Información aportada por la empresa' section in Diagnóstico tab",
+    "Asesor sees 'Recibido' badge for submitted intake",
+    "Asesor can view all submitted data (data types, usage, interests, sensitivity, notes)",
+    "All form interactions working (checkboxes, radio buttons, textarea)",
+    "Data persistence and display working correctly"
+  ],
+  
+  "test_report_links": ["/app/backend_test.py"],
+  
+  "action_item_for_main_agent": "",
+  
+  "updated_files": ["/app/backend_test.py"],
+  
+  "success_percentage": {
+    "backend": "100% - All API endpoints working correctly",
+    "frontend": "100% - All UI functionality working correctly"
+  },
+  
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "false"
+}
