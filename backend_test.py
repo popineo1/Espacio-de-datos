@@ -602,14 +602,16 @@ def main():
     
     # Test sequence
     test_sequence = [
+        # Basic API tests
         tester.test_health_check,
         tester.test_seed_demo_users,
         tester.test_invalid_login,
         tester.test_login_admin,
         tester.test_login_asesor,
-        tester.test_login_cliente,
         tester.test_get_me_admin,
         tester.test_get_me_no_token,
+        
+        # User management tests
         tester.test_list_users_admin,
         tester.test_list_users_asesor,
         tester.test_create_user_admin,
@@ -617,6 +619,31 @@ def main():
         tester.test_update_user_admin,
         tester.test_delete_user_admin,
         tester.test_delete_self_admin,
+        
+        # CRM Company tests
+        tester.test_seed_demo_companies,
+        tester.test_create_company_asesor,
+        tester.test_create_company_cliente,
+        tester.test_list_companies_asesor,
+        tester.test_list_companies_with_filters,
+        tester.test_get_company_detail_asesor,
+        
+        # Diagnostic workflow tests
+        tester.test_get_diagnostic,
+        tester.test_update_diagnostic,
+        tester.test_decide_diagnostic_apta,
+        tester.test_company_status_after_apta,
+        tester.test_project_created_after_apta,
+        
+        # Client tests
+        tester.test_login_cliente_lead,
+        tester.test_login_cliente_apta,
+        tester.test_login_cliente_descartada,
+        tester.test_client_dashboard_lead,
+        tester.test_client_dashboard_apta,
+        tester.test_client_dashboard_descartada,
+        tester.test_client_access_control,
+        tester.test_list_companies_cliente,
     ]
     
     # Run all tests
