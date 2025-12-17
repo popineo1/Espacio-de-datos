@@ -1,10 +1,10 @@
 {
-  "timestamp": "2025-12-17T09:11:13.264034",
+  "timestamp": "2025-12-17T11:00:04.672900",
   "summary": {
-    "total": 47,
-    "passed": 45,
+    "total": 75,
+    "passed": 73,
     "failed": 2,
-    "success_rate": 95.7
+    "success_rate": 97.3
   },
   "tests": [
     {
@@ -239,6 +239,146 @@
     },
     {
       "test": "Cliente Sees Only Own Company",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Get Apta Company",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Update Space Name",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Checklist Auto-Update (Space Selected)",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Get Apta Company for Role",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Update Target Role",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Checklist Auto-Update (Role Defined)",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Get Apta Company for Use Case",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Update Use Case",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Checklist Auto-Update (Use Case Defined)",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Get Apta Company for RGPD",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Update RGPD",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Checklist Auto-Update (RGPD Validated)",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Get Apta Company for Status",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Reset Status to Pendiente",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Status Update In Progress",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Status Updated to En Progreso",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Get Apta Company for Incomplete",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Clear Space Name",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Status Completed (Incomplete Checklist)",
+      "success": true,
+      "details": "Status: 400"
+    },
+    {
+      "test": "Get Apta Company for Complete",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Complete All Fields",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Status Completed (Complete Checklist)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Status Updated to Completada",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Dashboard Apta Project Details",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Client Sees Space Name",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Sees Target Role",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Sees Use Case",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Sees Checklist Progress",
       "success": true,
       "details": ""
     }
