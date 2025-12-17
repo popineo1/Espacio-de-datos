@@ -87,6 +87,37 @@ class SimpleAPITester:
         )
         return success, response
 
+    def test_get_intake(self, company_id):
+        """Get company intake"""
+        success, response = self.run_test(
+            "Get Company Intake",
+            "GET",
+            f"companies/{company_id}/intake",
+            200
+        )
+        return success, response
+
+    def test_create_intake(self, company_id, data):
+        """Create/update intake"""
+        success, response = self.run_test(
+            "Create/Update Intake",
+            "POST",
+            f"companies/{company_id}/intake",
+            200,
+            data=data
+        )
+        return success, response
+
+    def test_submit_intake(self, company_id):
+        """Submit intake"""
+        success, response = self.run_test(
+            "Submit Intake",
+            "POST",
+            f"companies/{company_id}/intake/submit",
+            200
+        )
+        return success, response
+
 def main():
     # Setup
     tester = SimpleAPITester()
