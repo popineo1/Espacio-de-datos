@@ -451,6 +451,73 @@ async def delete_company(
     
     return {"message": "Empresa eliminada correctamente"}
 
+# Create client user for company
+class CreateCompanyUserRequest(BaseModel):
+    email: EmailStr
+    name: str
+    password: str
+
+@api_router.post("/companies/{company_id}/user", response_model=UserResponse)
+async def create_company_user(
+    company_id: str,
+    user_data: CreateCompanyUserRequest,
+    current_user: dict = Depends(require_role(["admin", "asesor"]))
+):
+    # Check company exists
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"email": {"$regex": f"^{re.escape(user_data.email)}$", "$options": "i"}})
+    if existing:
+        raise HTTPException(status_code=400, detail="El email ya está registrado")
+    
+    # Check if company already has a user
+    existing_company_user = await db.users.find_one({"company_id": company_id})
+    if existing_company_user:
+        raise HTTPException(status_code=400, detail="Esta empresa ya tiene un usuario asignado")
+    
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "email": user_data.email.lower(),
+        "name": user_data.name,
+        "password": hash_password(user_data.password),
+        "role": "cliente",
+        "company_id": company_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    return UserResponse(
+        id=user_doc["id"],
+        email=user_doc["email"],
+        name=user_doc["name"],
+        role=user_doc["role"],
+        company_id=user_doc["company_id"],
+        created_at=user_doc["created_at"]
+    )
+
+@api_router.get("/companies/{company_id}/user", response_model=Optional[UserResponse])
+async def get_company_user(
+    company_id: str,
+    current_user: dict = Depends(require_role(["admin", "asesor"]))
+):
+    user = await db.users.find_one({"company_id": company_id, "role": "cliente"}, {"_id": 0, "password": 0})
+    if not user:
+        return None
+    
+    return UserResponse(
+        id=user["id"],
+        email=user["email"],
+        name=user["name"],
+        role=user.get("role"),
+        company_id=user.get("company_id"),
+        created_at=user["created_at"]
+    )
+
 # ==================== DIAGNOSTIC ROUTES ====================
 @api_router.get("/companies/{company_id}/diagnostic", response_model=DiagnosticResponse)
 async def get_diagnostic(
