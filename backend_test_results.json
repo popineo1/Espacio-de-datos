@@ -1,0 +1,106 @@
+{
+  "timestamp": "2025-12-17T08:49:12.850555",
+  "summary": {
+    "total": 19,
+    "passed": 18,
+    "failed": 1,
+    "success_rate": 94.7
+  },
+  "tests": [
+    {
+      "test": "API Health Check",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Seed Demo Users",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Invalid Login",
+      "success": true,
+      "details": "Status: 401"
+    },
+    {
+      "test": "Admin Login",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Admin Login - Role Verification",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Asesor Login",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Asesor Login - Role Verification",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Cliente Login",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Cliente Login - Role Verification",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Get Me (Admin)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Me (No Token)",
+      "success": false,
+      "details": "Status: 403 (Expected 401) - Not authenticated"
+    },
+    {
+      "test": "List Users (Admin)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "List Users (Asesor - Should Fail)",
+      "success": true,
+      "details": "Status: 403"
+    },
+    {
+      "test": "Create User (Admin)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Create User (Asesor - Should Fail)",
+      "success": true,
+      "details": "Status: 403"
+    },
+    {
+      "test": "Update User (Admin)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Delete User (Admin)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Admin ID",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Delete Self (Admin - Should Fail)",
+      "success": true,
+      "details": "Status: 400"
+    }
+  ]
+}
