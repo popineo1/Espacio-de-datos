@@ -632,6 +632,107 @@ const CompanyDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreateUserDialog} onOpenChange={setShowCreateUserDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-[#8b1530]" />
+              Crear Usuario Cliente
+            </DialogTitle>
+            <DialogDescription>
+              Crea un usuario para que el cliente pueda acceder al sistema y ver el estado de su empresa.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleCreateUser} className="space-y-4">
+            {userError && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{userError}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="user-name" className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Nombre completo
+              </Label>
+              <Input
+                id="user-name"
+                value={userFormData.name}
+                onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
+                data-testid="new-user-name"
+                placeholder="Nombre del usuario"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="user-email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Email
+              </Label>
+              <Input
+                id="user-email"
+                type="email"
+                value={userFormData.email}
+                onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
+                data-testid="new-user-email"
+                placeholder="usuario@empresa.com"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="user-password" className="flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                Contraseña
+              </Label>
+              <Input
+                id="user-password"
+                type="password"
+                value={userFormData.password}
+                onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
+                data-testid="new-user-password"
+                placeholder="Contraseña de acceso"
+                required
+                minLength={6}
+              />
+              <p className="text-xs text-[#64748b]">Mínimo 6 caracteres</p>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-3 text-sm">
+              <p className="text-[#64748b]">
+                <strong className="text-[#0f172a]">Empresa:</strong> {company?.name}
+              </p>
+              <p className="text-[#64748b]">
+                <strong className="text-[#0f172a]">Rol:</strong> Cliente
+              </p>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowCreateUserDialog(false)}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={creatingUser}
+                data-testid="submit-create-user"
+                className="bg-[#8b1530] hover:bg-[#701126] gap-2"
+              >
+                {creatingUser ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UserPlus className="h-4 w-4" />
+                )}
+                Crear usuario
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
