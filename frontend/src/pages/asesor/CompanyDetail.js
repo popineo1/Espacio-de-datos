@@ -155,6 +155,53 @@ const CompanyDetail = () => {
     setShowCreateUserDialog(true);
   };
 
+  const updateProjectField = async (field, value) => {
+    setSavingProject(true);
+    setProjectError('');
+    
+    try {
+      const response = await axios.put(
+        `${API_URL}/companies/${id}/project`,
+        { [field]: value },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProject(response.data);
+      setProjectForm(prev => ({ ...prev, [field]: value }));
+    } catch (error) {
+      setProjectError(error.response?.data?.detail || 'Error al actualizar');
+    } finally {
+      setSavingProject(false);
+    }
+  };
+
+  const updateIncorporationStatus = async (newStatus) => {
+    setSavingProject(true);
+    setProjectError('');
+    
+    try {
+      const response = await axios.put(
+        `${API_URL}/companies/${id}/project`,
+        { incorporation_status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProject(response.data);
+    } catch (error) {
+      setProjectError(error.response?.data?.detail || 'Error al actualizar estado');
+    } finally {
+      setSavingProject(false);
+    }
+  };
+
+  const getIncorporationStatusBadge = (status) => {
+    const config = {
+      pendiente: { color: 'bg-amber-100 text-amber-800', label: 'Pendiente' },
+      en_progreso: { color: 'bg-blue-100 text-blue-800', label: 'En progreso' },
+      completada: { color: 'bg-green-100 text-green-800', label: 'Completada' }
+    };
+    const { color, label } = config[status] || config.pendiente;
+    return <span className={`px-3 py-1 rounded-full text-sm font-medium ${color}`}>{label}</span>;
+  };
+
   const updateDiagnostic = async (field, value) => {
     if (diagnostic.result !== 'pendiente') return;
     
