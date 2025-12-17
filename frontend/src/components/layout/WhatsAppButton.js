@@ -2,7 +2,8 @@ import React from 'react';
 
 const WhatsAppButton = () => {
   const phoneNumber = '34693908637';
-  const whatsappUrl = `https://wa.me/${phoneNumber}`;
+  // Usar web.whatsapp.com directamente para evitar bloqueos de api.whatsapp.com
+  const whatsappUrl = `https://web.whatsapp.com/send?phone=${phoneNumber}`;
 
   return (
     <a
