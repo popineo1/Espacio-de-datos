@@ -924,6 +924,16 @@ def main():
         tester.test_client_dashboard_descartada,
         tester.test_client_access_control,
         tester.test_list_companies_cliente,
+        
+        # Phase 2 Project tests
+        tester.test_project_update_space_name,
+        tester.test_project_update_target_role,
+        tester.test_project_update_use_case,
+        tester.test_project_update_rgpd,
+        tester.test_project_status_update_to_in_progress,
+        tester.test_project_status_update_to_completed_with_incomplete_checklist,
+        tester.test_project_status_update_to_completed_with_complete_checklist,
+        tester.test_client_dashboard_apta_with_project_details,
     ]
     
     # Run all tests
