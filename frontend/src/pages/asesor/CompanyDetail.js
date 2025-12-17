@@ -76,6 +76,16 @@ const CompanyDetail = () => {
   const [userFormData, setUserFormData] = useState({ email: '', name: '', password: '' });
   const [userError, setUserError] = useState('');
   const [creatingUser, setCreatingUser] = useState(false);
+  
+  // Project state
+  const [projectForm, setProjectForm] = useState({
+    space_name: '',
+    target_role: '',
+    use_case: '',
+    rgpd_checked: false
+  });
+  const [savingProject, setSavingProject] = useState(false);
+  const [projectError, setProjectError] = useState('');
 
   useEffect(() => {
     fetchData();
