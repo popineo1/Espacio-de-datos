@@ -103,6 +103,29 @@ class CompanyResponse(BaseModel):
     contact_role: Optional[str] = None
     contact_phone: Optional[str] = None
     status: str  # lead, apta, descartada
+    intake_status: str = "pendiente"  # pendiente, recibida
+    created_at: str
+    updated_at: str
+
+# ==================== CLIENT INTAKE MODELS ====================
+class ClientIntakeCreate(BaseModel):
+    data_types: List[str] = []  # operativos, comerciales, clientes_pacientes, sensores_iot, historicos, no_lo_se
+    data_usage: Literal["solo_interno", "reporting", "estrategico", "apenas"] = "solo_interno"
+    main_interests: List[str] = []  # mejorar_procesos, acceder_datos_externos, monetizar, cumplimiento, no_lo_tengo_claro
+    data_sensitivity: Literal["baja", "media", "alta", "no_lo_se"] = "baja"
+    notes: Optional[str] = None
+
+class ClientIntakeResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    company_id: str
+    data_types: List[str] = []
+    data_usage: str
+    main_interests: List[str] = []
+    data_sensitivity: str
+    notes: Optional[str] = None
+    submitted: bool = False
+    submitted_at: Optional[str] = None
     created_at: str
     updated_at: str
 
