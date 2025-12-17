@@ -163,10 +163,10 @@ const Login = () => {
           data-testid="login-card"
           className="w-full max-w-md shadow-xl border-0 bg-white"
         >
-          <CardHeader className="space-y-1 text-center pb-6">
+          <CardHeader className="space-y-1 text-center pb-6 relative">
             <button 
               onClick={() => setShowLogin(false)}
-              className="absolute top-4 left-4 text-[#64748b] hover:text-[#0f172a] text-sm flex items-center gap-1"
+              className="absolute -top-2 left-0 text-[#64748b] hover:text-[#0f172a] text-sm flex items-center gap-1"
             >
               ← Volver
             </button>
