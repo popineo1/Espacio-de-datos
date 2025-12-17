@@ -891,6 +891,88 @@ const CompanyDetail = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Client Intake Info */}
+          <Card className="border-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)] mt-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ClipboardList className="h-5 w-5 text-[#8b1530]" />
+                  <div>
+                    <CardTitle className="text-lg">Información aportada por la empresa</CardTitle>
+                    <CardDescription>Cuestionario de contexto de datos</CardDescription>
+                  </div>
+                </div>
+                {intake ? (
+                  <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${intake.submitted ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                    {intake.submitted ? <BadgeCheck className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                    {intake.submitted ? 'Recibido' : 'Pendiente'}
+                  </span>
+                ) : (
+                  <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-600">
+                    Sin completar
+                  </span>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {intake ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-[#64748b] mb-2">Tipo de datos</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(intake.data_types || []).map(type => (
+                          <span key={type} className="px-2 py-1 bg-white border rounded text-sm capitalize">
+                            {type.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                        {(!intake.data_types || intake.data_types.length === 0) && <span className="text-[#64748b]">-</span>}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-[#64748b] mb-2">Uso actual</p>
+                      <p className="font-medium capitalize">{(intake.data_usage || '-').replace(/_/g, ' ')}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-[#64748b] mb-2">Interés principal</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(intake.main_interests || []).map(interest => (
+                          <span key={interest} className="px-2 py-1 bg-white border rounded text-sm capitalize">
+                            {interest.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                        {(!intake.main_interests || intake.main_interests.length === 0) && <span className="text-[#64748b]">-</span>}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-[#64748b] mb-2">Sensibilidad</p>
+                      <p className="font-medium capitalize">{(intake.data_sensitivity || '-').replace(/_/g, ' ')}</p>
+                    </div>
+                  </div>
+                  {intake.notes && (
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-[#64748b] mb-2">Comentarios</p>
+                      <p>{intake.notes}</p>
+                    </div>
+                  )}
+                  {intake.submitted_at && (
+                    <p className="text-xs text-[#64748b]">
+                      Enviado el {new Date(intake.submitted_at).toLocaleDateString('es-ES')} a las {new Date(intake.submitted_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-[#64748b]">
+                  <ClipboardList className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                  <p>La empresa aún no ha completado el cuestionario de contexto.</p>
+                  {companyUser && (
+                    <p className="text-sm mt-2">El usuario {companyUser.email} puede acceder a su panel para completarlo.</p>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
