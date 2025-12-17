@@ -105,6 +105,16 @@ const CompanyDetail = () => {
       setDiagnostic(diagnosticRes.data);
       setProject(projectRes.data);
       setCompanyUser(userRes.data);
+      
+      // Initialize project form if project exists
+      if (projectRes.data) {
+        setProjectForm({
+          space_name: projectRes.data.space_name || '',
+          target_role: projectRes.data.target_role || '',
+          use_case: projectRes.data.use_case || '',
+          rgpd_checked: projectRes.data.rgpd_checked || false
+        });
+      }
     } catch (error) {
       setError('Error al cargar los datos');
       console.error('Error:', error);
