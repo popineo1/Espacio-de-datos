@@ -1,86 +1,72 @@
-# Espacio de Datos - fix/cliente-mostrar-fase2
+# Espacio de Datos - feat/cuestionario-contexto-cliente
 
-## Verificación Iteración 2
+## Nueva Funcionalidad: Cuestionario de Contexto de Datos
 
-### ✅ Funcionalidades Verificadas
+### Modelo ClientIntake (1:1 con Company)
+```javascript
+{
+  id: string,
+  company_id: string (unique),
+  data_types: string[],        // operativos, comerciales, clientes_pacientes, sensores_iot, historicos, no_lo_se
+  data_usage: enum,            // solo_interno, reporting, estrategico, apenas
+  main_interests: string[],    // mejorar_procesos, acceder_datos_externos, monetizar, cumplimiento, no_lo_tengo_claro
+  data_sensitivity: enum,      // baja, media, alta, no_lo_se
+  notes: string | null,
+  submitted: boolean,
+  submitted_at: datetime | null,
+  created_at: datetime,
+  updated_at: datetime
+}
+```
 
-#### 1. Creación de Project al marcar APTA
-- Al pulsar "Marcar APTA", se crea automáticamente un Project con:
-  - phase = 2
-  - incorporation_status = "pendiente"
-  - checklist con 4 items en false
-- No se crean duplicados si ya existe Project
+### Campo añadido a Company
+- `intake_status`: `pendiente` | `recibida` (default: pendiente)
 
-#### 2. Vista Asesor - Pestaña "Proyecto (Fase 2)"
-- Pestaña visible SOLO si Company.status = "apta"
-- Campos editables:
-  - spaceName (selector con 6 opciones)
-  - targetRole (participante/proveedor)
-  - useCase (textarea)
-  - rgpdChecked (checkbox)
-- Checklist autoactualizado (✅/⬜)
-- Botones de estado:
-  - "Marcar como En progreso" (si pendiente)
-  - "Marcar como Completada" (solo si checklist completo)
+### Reglas de Negocio
+- ✅ Cuestionario visible SOLO cuando Company.status = "lead"
+- ✅ Al enviar: ClientIntake.submitted=true, Company.intake_status="recibida"
+- ✅ Cliente NO puede editar después de enviar
+- ✅ Admin/Asesor pueden ver y resetear el cuestionario
 
-#### 3. Vista Cliente - Datos del Project
-- Si Company.status="lead" → "En evaluación"
-- Si Company.status="apta" + Project existe:
-  - Tarjeta "Incorporación al Espacio de Datos"
-  - Estado: Pendiente / En progreso / Completada
-  - Espacio de datos (si existe)
-  - Modalidad (si existe)
-  - Caso de uso (si existe)
-  - Checklist visual (solo lectura)
-- Cliente NO puede editar campos
+### UI Cliente (Mi Panel)
+- Si status=lead e intake_status=pendiente:
+  - Muestra formulario editable con todos los campos
+  - Botón "Enviar información"
+  - Texto: "No implica ninguna solicitud ni compromiso"
+- Si status=lead e intake_status=recibida:
+  - Muestra cuestionario en modo solo lectura
+  - Badge "Enviado"
+  - Mensaje: "Gracias. Nuestro equipo está evaluando la viabilidad"
+- Si status=apta: Muestra sección de Incorporación (no cuestionario)
+- Si status=descartada: Mensaje neutro
 
-#### 4. Seguridad
-- Cliente solo ve su propia Company y Project
-- Asesor puede editar todos los campos
-- Admin ve todo
+### UI Asesor (Diagnóstico)
+- Sección "Información aportada por la empresa"
+- Badge: "Recibido" / "Pendiente" / "Sin completar"
+- Muestra todos los datos del cuestionario en solo lectura
+
+## Endpoints API
+
+| Método | Ruta | Descripción | Acceso |
+|--------|------|-------------|--------|
+| GET | /api/companies/{id}/intake | Ver cuestionario | Cliente(propio)/Asesor/Admin |
+| POST | /api/companies/{id}/intake | Crear/actualizar cuestionario | Cliente(propio)/Asesor/Admin |
+| POST | /api/companies/{id}/intake/submit | Enviar cuestionario | Cliente(propio)/Asesor/Admin |
+| POST | /api/companies/{id}/intake/reset | Reabrir cuestionario | Asesor/Admin |
 
 ## Credenciales Demo
 
 | Email | Password | Empresa | Status |
 |-------|----------|---------|--------|
-| asesor@espaciodatos.com | asesor123 | - | Asesor |
-| cliente.lead@espaciodatos.com | cliente123 | TechData Solutions | APTA (proyecto pendiente) |
-| cliente.apta@espaciodatos.com | cliente123 | Industrias Renovables | APTA (proyecto completado) |
+| cliente.cuestionario@espaciodatos.com | cliente123 | Demo Cuestionario S.L. | Lead (ver cuestionario) |
+| cliente.lead@espaciodatos.com | cliente123 | TechData Solutions | Apta |
+| cliente.apta@espaciodatos.com | cliente123 | Industrias Renovables | Apta |
 | cliente.descartada@espaciodatos.com | cliente123 | Comercial Express | Descartada |
 
-## Modelo Project (Actualizado)
-
-```javascript
-{
-  id: string,
-  company_id: string,
-  title: string,
-  phase: 2,
-  status: "iniciado",
-  space_name: string | null,
-  target_role: "participante" | "proveedor" | null,
-  use_case: string | null,
-  rgpd_checked: boolean,
-  incorporation_status: "pendiente" | "en_progreso" | "completada",
-  incorporation_checklist: {
-    espacio_seleccionado: boolean,  // auto: space_name no vacío
-    rol_definido: boolean,           // auto: target_role no null
-    caso_uso_definido: boolean,      // auto: use_case no vacío
-    validacion_rgpd: boolean         // auto: rgpd_checked = true
-  },
-  created_at: string
-}
-```
-
-## Endpoints API
-
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | /api/companies/:id/project | Ver proyecto |
-| PUT | /api/companies/:id/project | Actualizar proyecto |
-| POST | /api/companies/:id/diagnostic/decide | Marcar APTA/NO APTA (crea Project si APTA) |
-| GET | /api/client/dashboard | Dashboard cliente con Project |
+## Test Results
+- Backend: 100% ✅
+- Frontend: 100% ✅
 
 ## GitHub
-**Rama:** `fix/cliente-mostrar-fase2`
+**Rama:** `feat/cuestionario-contexto-cliente`
 Usa el botón **"Save to GitHub"** en Emergent.
