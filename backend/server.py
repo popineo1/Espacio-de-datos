@@ -489,9 +489,147 @@ async def delete_company(
     # Delete related data
     await db.diagnostics.delete_many({"company_id": company_id})
     await db.projects.delete_many({"company_id": company_id})
+    await db.client_intakes.delete_many({"company_id": company_id})
     await db.companies.delete_one({"id": company_id})
     
     return {"message": "Empresa eliminada correctamente"}
+
+# ==================== CLIENT INTAKE ROUTES ====================
+@api_router.get("/companies/{company_id}/intake", response_model=Optional[ClientIntakeResponse])
+async def get_client_intake(
+    company_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    # Cliente can only access their company intake
+    if current_user.get("role") == "cliente":
+        if current_user.get("company_id") != company_id:
+            raise HTTPException(status_code=403, detail="No autorizado")
+    elif current_user.get("role") not in ["admin", "asesor"]:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    intake = await db.client_intakes.find_one({"company_id": company_id}, {"_id": 0})
+    if not intake:
+        return None
+    
+    return ClientIntakeResponse(**intake)
+
+@api_router.post("/companies/{company_id}/intake", response_model=ClientIntakeResponse)
+async def create_or_update_intake(
+    company_id: str,
+    intake_data: ClientIntakeCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    # Only cliente can create/update their own intake
+    if current_user.get("role") == "cliente":
+        if current_user.get("company_id") != company_id:
+            raise HTTPException(status_code=403, detail="No autorizado")
+    elif current_user.get("role") not in ["admin", "asesor"]:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    # Check company exists and is in lead status
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    
+    # Check if intake already exists and is submitted
+    existing = await db.client_intakes.find_one({"company_id": company_id}, {"_id": 0})
+    if existing and existing.get("submitted"):
+        # Only admin/asesor can update submitted intake
+        if current_user.get("role") == "cliente":
+            raise HTTPException(status_code=400, detail="El cuestionario ya ha sido enviado y no puede modificarse")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    if existing:
+        # Update existing
+        update_data = {
+            "data_types": intake_data.data_types,
+            "data_usage": intake_data.data_usage,
+            "main_interests": intake_data.main_interests,
+            "data_sensitivity": intake_data.data_sensitivity,
+            "notes": intake_data.notes,
+            "updated_at": now
+        }
+        await db.client_intakes.update_one({"company_id": company_id}, {"$set": update_data})
+        updated = await db.client_intakes.find_one({"company_id": company_id}, {"_id": 0})
+        return ClientIntakeResponse(**updated)
+    else:
+        # Create new
+        intake_doc = {
+            "id": str(uuid.uuid4()),
+            "company_id": company_id,
+            "data_types": intake_data.data_types,
+            "data_usage": intake_data.data_usage,
+            "main_interests": intake_data.main_interests,
+            "data_sensitivity": intake_data.data_sensitivity,
+            "notes": intake_data.notes,
+            "submitted": False,
+            "submitted_at": None,
+            "created_at": now,
+            "updated_at": now
+        }
+        await db.client_intakes.insert_one(intake_doc)
+        return ClientIntakeResponse(**intake_doc)
+
+@api_router.post("/companies/{company_id}/intake/submit", response_model=ClientIntakeResponse)
+async def submit_intake(
+    company_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    # Only cliente can submit their own intake
+    if current_user.get("role") == "cliente":
+        if current_user.get("company_id") != company_id:
+            raise HTTPException(status_code=403, detail="No autorizado")
+    elif current_user.get("role") not in ["admin", "asesor"]:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    intake = await db.client_intakes.find_one({"company_id": company_id}, {"_id": 0})
+    if not intake:
+        raise HTTPException(status_code=404, detail="Debe completar el cuestionario antes de enviarlo")
+    
+    if intake.get("submitted"):
+        raise HTTPException(status_code=400, detail="El cuestionario ya ha sido enviado")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Mark as submitted
+    await db.client_intakes.update_one(
+        {"company_id": company_id},
+        {"$set": {"submitted": True, "submitted_at": now, "updated_at": now}}
+    )
+    
+    # Update company intake_status
+    await db.companies.update_one(
+        {"id": company_id},
+        {"$set": {"intake_status": "recibida", "updated_at": now}}
+    )
+    
+    updated = await db.client_intakes.find_one({"company_id": company_id}, {"_id": 0})
+    return ClientIntakeResponse(**updated)
+
+@api_router.post("/companies/{company_id}/intake/reset")
+async def reset_intake(
+    company_id: str,
+    current_user: dict = Depends(require_role(["admin", "asesor"]))
+):
+    """Allow asesor/admin to reset intake so client can edit again"""
+    intake = await db.client_intakes.find_one({"company_id": company_id}, {"_id": 0})
+    if not intake:
+        raise HTTPException(status_code=404, detail="No hay cuestionario para esta empresa")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    await db.client_intakes.update_one(
+        {"company_id": company_id},
+        {"$set": {"submitted": False, "submitted_at": None, "updated_at": now}}
+    )
+    
+    await db.companies.update_one(
+        {"id": company_id},
+        {"$set": {"intake_status": "pendiente", "updated_at": now}}
+    )
+    
+    return {"message": "Cuestionario reabierto para edición"}
 
 # Create client user for company
 class CreateCompanyUserRequest(BaseModel):
