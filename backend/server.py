@@ -110,7 +110,8 @@ def require_role(allowed_roles: List[str]):
 # Auth Routes
 @api_router.post("/auth/login", response_model=LoginResponse)
 async def login(request: LoginRequest):
-    user = await db.users.find_one({"email": request.email}, {"_id": 0})
+    # Case-insensitive email search
+    user = await db.users.find_one({"email": {"$regex": f"^{request.email}$", "$options": "i"}}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
     
