@@ -1,10 +1,10 @@
 {
-  "timestamp": "2025-12-17T08:49:12.850555",
+  "timestamp": "2025-12-17T09:11:13.264034",
   "summary": {
-    "total": 19,
-    "passed": 18,
-    "failed": 1,
-    "success_rate": 94.7
+    "total": 47,
+    "passed": 45,
+    "failed": 2,
+    "success_rate": 95.7
   },
   "tests": [
     {
@@ -39,16 +39,6 @@
     },
     {
       "test": "Asesor Login - Role Verification",
-      "success": true,
-      "details": ""
-    },
-    {
-      "test": "Cliente Login",
-      "success": true,
-      "details": "Status: 200"
-    },
-    {
-      "test": "Cliente Login - Role Verification",
       "success": true,
       "details": ""
     },
@@ -101,6 +91,156 @@
       "test": "Delete Self (Admin - Should Fail)",
       "success": true,
       "details": "Status: 400"
+    },
+    {
+      "test": "Seed Demo Companies",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Create Company (Asesor)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Company Initial Status (lead)",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Create Company (Cliente - Should Fail)",
+      "success": false,
+      "details": "No cliente token available"
+    },
+    {
+      "test": "List Companies (Asesor)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "List Companies with Filter",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Company Detail (Asesor)",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Get Diagnostic",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Diagnostic Initial State (pendiente)",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Update Diagnostic",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Decide Diagnostic APTA",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Diagnostic Result Changed to APTA",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Company Status After APTA",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Company Status Updated to APTA",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Project Created After APTA",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Project Phase 2",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Project Status Iniciado",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Cliente Lead Login",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Cliente Apta Login",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Cliente Descartada Login",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Client Dashboard Lead",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Client Dashboard Lead Status",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Dashboard Apta",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Client Dashboard Apta Status",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Dashboard Apta Project Info",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Dashboard Descartada",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Client Dashboard Descartada Status",
+      "success": true,
+      "details": ""
+    },
+    {
+      "test": "Client Access Control (Should Fail)",
+      "success": true,
+      "details": "Status: 403"
+    },
+    {
+      "test": "List Companies Cliente",
+      "success": true,
+      "details": "Status: 200"
+    },
+    {
+      "test": "Cliente Sees Only Own Company",
+      "success": true,
+      "details": ""
     }
   ]
 }
