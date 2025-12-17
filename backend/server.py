@@ -965,8 +965,23 @@ async def get_client_dashboard(
     result["company"] = {
         "id": company["id"],
         "name": company["name"],
-        "status": company["status"]
+        "status": company["status"],
+        "intake_status": company.get("intake_status", "pendiente")
     }
+    
+    # Include intake info for lead companies
+    intake = await db.client_intakes.find_one({"company_id": company["id"]}, {"_id": 0})
+    if intake:
+        result["intake"] = {
+            "id": intake["id"],
+            "data_types": intake.get("data_types", []),
+            "data_usage": intake.get("data_usage"),
+            "main_interests": intake.get("main_interests", []),
+            "data_sensitivity": intake.get("data_sensitivity"),
+            "notes": intake.get("notes"),
+            "submitted": intake.get("submitted", False),
+            "submitted_at": intake.get("submitted_at")
+        }
     
     if project:
         result["project"] = {
