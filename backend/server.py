@@ -811,7 +811,12 @@ async def get_client_dashboard(
             "id": project["id"],
             "title": project["title"],
             "phase": project["phase"],
-            "status": project["status"]
+            "status": project["status"],
+            "space_name": project.get("space_name"),
+            "target_role": project.get("target_role"),
+            "use_case": project.get("use_case"),
+            "incorporation_status": project.get("incorporation_status", "pendiente"),
+            "incorporation_checklist": project.get("incorporation_checklist", {})
         }
     
     return result
