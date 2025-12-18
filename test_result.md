@@ -101,3 +101,79 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  SaaS application for managing companies joining data spaces. 
+  Critical P0 issue: Application unusable on fresh deployment because no initial admin user can be created.
+  Solution: Implement automatic admin bootstrap on startup using environment variables.
+
+backend:
+  - task: "Bootstrap admin creation on startup"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented @app.on_event('startup') handler that creates admin user from env vars if no admin exists"
+
+  - task: "Change password endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented PUT /api/users/{user_id}/password endpoint. Admin can change any user's password, users can change their own."
+
+frontend:
+  - task: "Change password UI in UserManagement"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/admin/UserManagement.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added Key icon button in user actions table and dialog with current/new/confirm password fields"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Bootstrap admin creation on startup"
+    - "Change password endpoint"
+    - "Change password UI in UserManagement"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implemented P0 fix for admin bootstrap. Changes made:
+      1. Added BOOTSTRAP_ADMIN_ENABLED, BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PASSWORD to backend/.env
+      2. Added @app.on_event('startup') handler in server.py that creates admin if none exists
+      3. Added PUT /api/users/{user_id}/password endpoint for password changes
+      4. Added password change dialog in UserManagement.js frontend
+      
+      Test credentials:
+      - admin@espaciodatos.com / admin123
+      
+      Please test:
+      1. Backend logs show "Bootstrap admin created" or "Admin already exists" on startup
+      2. Login works with bootstrap credentials
+      3. Password change API works
+      4. Password change UI dialog works
