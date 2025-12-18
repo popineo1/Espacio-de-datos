@@ -1236,6 +1236,43 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def bootstrap_admin():
+    """Create initial admin user on startup if enabled and no admin exists"""
+    bootstrap_enabled = os.environ.get('BOOTSTRAP_ADMIN_ENABLED', 'false').lower() == 'true'
+    
+    if not bootstrap_enabled:
+        logger.info("Bootstrap admin disabled")
+        return
+    
+    admin_email = os.environ.get('BOOTSTRAP_ADMIN_EMAIL')
+    admin_password = os.environ.get('BOOTSTRAP_ADMIN_PASSWORD')
+    
+    if not admin_email or not admin_password:
+        logger.warning("Bootstrap admin enabled but BOOTSTRAP_ADMIN_EMAIL or BOOTSTRAP_ADMIN_PASSWORD not set")
+        return
+    
+    # Check if any admin user exists
+    existing_admin = await db.users.find_one({"role": "admin"}, {"_id": 0})
+    
+    if existing_admin:
+        logger.info(f"Admin already exists: {existing_admin['email']}")
+        return
+    
+    # Create bootstrap admin
+    admin_doc = {
+        "id": str(uuid.uuid4()),
+        "email": admin_email.lower(),
+        "name": "Administrador",
+        "password": hash_password(admin_password),
+        "role": "admin",
+        "company_id": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(admin_doc)
+    logger.info(f"Bootstrap admin created: {admin_email}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
