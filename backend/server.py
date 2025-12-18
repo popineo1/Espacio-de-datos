@@ -363,6 +363,43 @@ async def delete_user(
     
     return {"message": "Usuario eliminado correctamente"}
 
+@api_router.put("/users/{user_id}/password")
+async def change_user_password(
+    user_id: str,
+    password_data: PasswordChangeRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Change user password - user can change their own, admin can change anyone's"""
+    # Check permissions: user can change own password, admin can change any
+    if current_user["id"] != user_id and current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="No autorizado para cambiar esta contraseña")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # Verify current password (required for self-change, optional for admin changing others)
+    if current_user["id"] == user_id:
+        if not verify_password(password_data.current_password, user["password"]):
+            raise HTTPException(status_code=400, detail="La contraseña actual es incorrecta")
+    else:
+        # Admin changing another user's password - verify admin's own password
+        admin_user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        if not verify_password(password_data.current_password, admin_user["password"]):
+            raise HTTPException(status_code=400, detail="Tu contraseña de admin es incorrecta")
+    
+    # Validate new password
+    if len(password_data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres")
+    
+    # Update password
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"password": hash_password(password_data.new_password)}}
+    )
+    
+    return {"message": "Contraseña actualizada correctamente"}
+
 # ==================== COMPANY ROUTES ====================
 @api_router.post("/companies", response_model=CompanyResponse)
 async def create_company(
