@@ -154,154 +154,168 @@ def main():
     # Setup
     tester = SimpleAPITester()
     
-    print("=== Testing Asesor API Access ===")
+    print("=== Testing Bootstrap Admin Functionality ===")
     
-    # Test asesor login
-    success, login_response = tester.test_login("asesor@espaciodatos.com", "asesor123")
+    # Test bootstrap admin login (should exist from startup)
+    success, login_response = tester.test_login("admin@espaciodatos.com", "admin123")
     if not success:
-        print("❌ Asesor login failed, stopping tests")
+        print("❌ Bootstrap admin login failed - P0 issue not resolved!")
         return 1
 
-    print(f"✅ Asesor logged in: {login_response.get('user', {}).get('name', 'Unknown')}")
-
-    # Get companies list
-    success, companies = tester.test_get_companies()
+    print(f"✅ Bootstrap admin login successful: {login_response.get('user', {}).get('name', 'Unknown')}")
+    print(f"   - Email: {login_response.get('user', {}).get('email', 'Unknown')}")
+    print(f"   - Role: {login_response.get('user', {}).get('role', 'Unknown')}")
+    
+    # Get users list to verify admin exists
+    success, users = tester.test_get_users()
     if not success:
-        print("❌ Failed to get companies")
+        print("❌ Failed to get users list")
         return 1
 
-    print(f"✅ Found {len(companies)} companies")
+    admin_users = [u for u in users if u.get('role') == 'admin']
+    print(f"✅ Found {len(admin_users)} admin user(s)")
     
-    # Find Demo Cuestionario company (lead status)
-    demo_company = None
-    for company in companies:
-        if 'Demo Cuestionario' in company.get('name', ''):
-            demo_company = company
+    bootstrap_admin = None
+    for user in admin_users:
+        if user.get('email') == 'admin@espaciodatos.com':
+            bootstrap_admin = user
             break
     
-    if not demo_company:
-        print("❌ Demo Cuestionario company not found")
+    if not bootstrap_admin:
+        print("❌ Bootstrap admin not found in users list")
         return 1
     
-    print(f"✅ Found Demo Cuestionario: {demo_company['name']} - Status: {demo_company['status']}")
+    print(f"✅ Bootstrap admin found: {bootstrap_admin['name']} ({bootstrap_admin['email']})")
     
-    # Test intake functionality with asesor credentials
-    print("\n=== Testing Intake API (Asesor) ===")
+    # Test password change functionality
+    print("\n=== Testing Password Change Functionality ===")
     
-    # Get intake (should be empty initially)
-    success, intake = tester.test_get_intake(demo_company['id'])
+    # Create a test user first
+    test_user_data = {
+        "email": f"testuser_{datetime.now().strftime('%H%M%S')}@test.com",
+        "name": "Test User",
+        "password": "testpass123",
+        "role": "asesor"
+    }
+    
+    success, created_user = tester.test_create_user(test_user_data)
+    if not success:
+        print("❌ Failed to create test user for password change test")
+        return 1
+    
+    print(f"✅ Test user created: {created_user['name']} ({created_user['email']})")
+    
+    # Test admin changing another user's password
+    success, _ = tester.test_change_password(
+        created_user['id'], 
+        "admin123",  # Admin's current password
+        "newpassword123"  # New password for test user
+    )
+    
     if success:
-        print(f"✅ Intake API accessible - Submitted: {intake.get('submitted', False) if intake else 'No intake'}")
-    else:
-        print("❌ Failed to access intake API")
-
-    # Test cliente cuestionario login
-    print("\n=== Testing Cliente Cuestionario API Access ===")
-    
-    cliente_tester = SimpleAPITester()
-    success, cliente_response = cliente_tester.test_login("cliente.cuestionario@espaciodatos.com", "cliente123")
-    if success:
-        print(f"✅ Cliente cuestionario logged in: {cliente_response.get('user', {}).get('name', 'Unknown')}")
+        print("✅ Admin successfully changed test user's password")
         
-        # Test dashboard access
-        success, dashboard = cliente_tester.run_test(
-            "Cliente Dashboard",
-            "GET",
-            "client/dashboard",
-            200
-        )
+        # Test login with new password
+        test_tester = SimpleAPITester()
+        success, _ = test_tester.test_login(created_user['email'], "newpassword123")
         if success:
-            print(f"✅ Cliente dashboard accessible - Status: {dashboard.get('status', 'Unknown')}")
-            print(f"   - Company Status: {dashboard.get('company', {}).get('status', 'Unknown')}")
-            print(f"   - Intake Status: {dashboard.get('company', {}).get('intake_status', 'Unknown')}")
+            print("✅ Test user can login with new password")
         else:
-            print("❌ Cliente dashboard not accessible")
+            print("❌ Test user cannot login with new password")
             
-        # Test intake creation
-        print("\n=== Testing Intake Creation ===")
+        # Test that old password doesn't work
+        old_tester = SimpleAPITester()
+        success, _ = old_tester.test_login(created_user['email'], "testpass123")
+        if not success:
+            print("✅ Test user correctly cannot login with old password")
+        else:
+            print("❌ Test user can still login with old password (should be blocked)")
+            
+    else:
+        print("❌ Admin failed to change test user's password")
+    
+    # Test admin changing their own password
+    print("\n=== Testing Admin Self Password Change ===")
+    
+    success, _ = tester.test_change_password(
+        bootstrap_admin['id'],
+        "admin123",  # Current admin password
+        "newadmin123"  # New admin password
+    )
+    
+    if success:
+        print("✅ Admin successfully changed own password")
         
-        intake_data = {
-            "data_types": ["operativos", "comerciales"],
-            "data_usage": "reporting",
-            "main_interests": ["mejorar_procesos", "acceder_datos_externos"],
-            "data_sensitivity": "media",
-            "notes": "Empresa interesada en compartir datos operativos"
+        # Test login with new admin password
+        new_admin_tester = SimpleAPITester()
+        success, _ = new_admin_tester.test_login("admin@espaciodatos.com", "newadmin123")
+        if success:
+            print("✅ Admin can login with new password")
+            
+            # Change password back for consistency
+            success, _ = new_admin_tester.test_change_password(
+                bootstrap_admin['id'],
+                "newadmin123",
+                "admin123"
+            )
+            if success:
+                print("✅ Admin password restored to original")
+            else:
+                print("⚠️ Could not restore admin password to original")
+        else:
+            print("❌ Admin cannot login with new password")
+    else:
+        print("❌ Admin failed to change own password")
+    
+    # Test invalid password change scenarios
+    print("\n=== Testing Password Change Error Handling ===")
+    
+    # Test with wrong current password
+    success, _ = tester.test_change_password(
+        bootstrap_admin['id'],
+        "wrongpassword",
+        "newpass123"
+    )
+    
+    if not success:
+        print("✅ Password change correctly rejected with wrong current password")
+    else:
+        print("❌ Password change accepted with wrong current password (security issue)")
+    
+    # Test with too short new password
+    success, _ = tester.test_change_password(
+        bootstrap_admin['id'],
+        "admin123",
+        "123"  # Too short
+    )
+    
+    if not success:
+        print("✅ Password change correctly rejected with too short password")
+    else:
+        print("❌ Password change accepted with too short password (validation issue)")
+
+    # Test user creation with different roles
+    print("\n=== Testing User Creation with Different Roles ===")
+    
+    roles_to_test = ["admin", "asesor", "cliente"]
+    
+    for role in roles_to_test:
+        user_data = {
+            "email": f"test_{role}_{datetime.now().strftime('%H%M%S')}@test.com",
+            "name": f"Test {role.title()}",
+            "password": "testpass123",
+            "role": role
         }
         
-        success, created_intake = cliente_tester.test_create_intake(demo_company['id'], intake_data)
+        success, created = tester.test_create_user(user_data)
         if success:
-            print("✅ Intake created successfully")
-            print(f"   - Data Types: {created_intake.get('data_types', [])}")
-            print(f"   - Data Usage: {created_intake.get('data_usage', 'Unknown')}")
-            print(f"   - Submitted: {created_intake.get('submitted', False)}")
+            print(f"✅ Successfully created {role} user: {created['name']}")
         else:
-            print("❌ Failed to create intake")
-            
-        # Test intake submission
-        print("\n=== Testing Intake Submission ===")
-        
-        success, submitted_intake = cliente_tester.test_submit_intake(demo_company['id'])
-        if success:
-            print("✅ Intake submitted successfully")
-            print(f"   - Submitted: {submitted_intake.get('submitted', False)}")
-            print(f"   - Submitted At: {submitted_intake.get('submitted_at', 'Unknown')}")
-        else:
-            print("❌ Failed to submit intake")
-            
-        # Test that client cannot edit after submission
-        print("\n=== Testing Post-Submission Restrictions ===")
-        
-        success, _ = cliente_tester.test_create_intake(demo_company['id'], {"notes": "Should not work"})
-        if not success:
-            print("✅ Client correctly prevented from editing after submission")
-        else:
-            print("❌ Client was able to edit after submission (should be blocked)")
-            
-    else:
-        print("❌ Cliente cuestionario login failed")
-
-    # Test cliente apta (should NOT see questionnaire)
-    print("\n=== Testing Cliente Apta (Should NOT see questionnaire) ===")
-    
-    cliente_apta_tester = SimpleAPITester()
-    success, apta_response = cliente_apta_tester.test_login("cliente.apta@espaciodatos.com", "cliente123")
-    if success:
-        print(f"✅ Cliente apta logged in: {apta_response.get('user', {}).get('name', 'Unknown')}")
-        
-        # Test dashboard access
-        success, dashboard = cliente_apta_tester.run_test(
-            "Cliente Apta Dashboard",
-            "GET",
-            "client/dashboard",
-            200
-        )
-        if success:
-            print(f"✅ Cliente apta dashboard accessible - Status: {dashboard.get('status', 'Unknown')}")
-            print(f"   - Company Status: {dashboard.get('company', {}).get('status', 'Unknown')}")
-            has_intake = 'intake' in dashboard
-            print(f"   - Has Intake in Dashboard: {has_intake} (should be False for apta)")
-        else:
-            print("❌ Cliente apta dashboard not accessible")
-    else:
-        print("❌ Cliente apta login failed")
-
-    # Test asesor can see submitted intake
-    print("\n=== Testing Asesor Can View Submitted Intake ===")
-    
-    success, final_intake = tester.test_get_intake(demo_company['id'])
-    if success and final_intake:
-        print("✅ Asesor can view submitted intake")
-        print(f"   - Data Types: {final_intake.get('data_types', [])}")
-        print(f"   - Main Interests: {final_intake.get('main_interests', [])}")
-        print(f"   - Submitted: {final_intake.get('submitted', False)}")
-    else:
-        print("❌ Asesor cannot view intake or intake not found")
+            print(f"❌ Failed to create {role} user")
 
     # Print results
-    total_passed = tester.tests_passed + cliente_tester.tests_passed + cliente_apta_tester.tests_passed
-    total_run = tester.tests_run + cliente_tester.tests_run + cliente_apta_tester.tests_run
-    print(f"\n📊 Tests passed: {total_passed}/{total_run}")
-    return 0 if total_passed == total_run else 1
+    print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
