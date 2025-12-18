@@ -56,6 +56,38 @@ class SimpleAPITester:
             return True, response
         return False, {}
 
+    def test_change_password(self, user_id, current_password, new_password):
+        """Test password change"""
+        success, response = self.run_test(
+            "Change Password",
+            "PUT",
+            f"users/{user_id}/password",
+            200,
+            data={"current_password": current_password, "new_password": new_password}
+        )
+        return success, response
+
+    def test_get_users(self):
+        """Get users list"""
+        success, response = self.run_test(
+            "Get Users",
+            "GET",
+            "users",
+            200
+        )
+        return success, response
+
+    def test_create_user(self, user_data):
+        """Create new user"""
+        success, response = self.run_test(
+            "Create User",
+            "POST",
+            "users",
+            200,
+            data=user_data
+        )
+        return success, response
+
     def test_get_companies(self):
         """Get companies list"""
         success, response = self.run_test(
