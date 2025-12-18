@@ -152,6 +152,47 @@ const UserManagement = () => {
     setShowDeleteDialog(true);
   };
 
+  const openPasswordDialog = (user) => {
+    setSelectedUser(user);
+    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setError('');
+    setShowPasswordDialog(true);
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setError('La nueva contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    setSubmitting(true);
+    
+    try {
+      await axios.put(`${API_URL}/users/${selectedUser.id}/password`, {
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShowPasswordDialog(false);
+      setSelectedUser(null);
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      alert('Contraseña actualizada correctamente');
+    } catch (error) {
+      setError(error.response?.data?.detail || 'Error al cambiar contraseña');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const getRoleIcon = (role) => {
     switch (role) {
       case 'admin': return <Shield className="h-4 w-4 text-red-600" />;
