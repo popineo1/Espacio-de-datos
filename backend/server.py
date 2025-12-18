@@ -59,6 +59,10 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     company_id: Optional[str] = None
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
