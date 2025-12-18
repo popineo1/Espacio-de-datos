@@ -37,7 +37,8 @@ import {
   User,
   Loader2,
   AlertCircle,
-  Search
+  Search,
+  Key
 } from 'lucide-react';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 
