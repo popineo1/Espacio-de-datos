@@ -315,8 +315,19 @@ const UserManagement = () => {
                         onClick={() => openEditDialog(user)}
                         data-testid={`edit-user-${user.id}`}
                         className="text-[#64748b] hover:text-[#0f172a]"
+                        title="Editar usuario"
                       >
                         <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openPasswordDialog(user)}
+                        data-testid={`password-user-${user.id}`}
+                        className="text-[#64748b] hover:text-amber-600"
+                        title="Cambiar contraseña"
+                      >
+                        <Key className="h-4 w-4" />
                       </Button>
                       {currentUser?.id !== user.id && (
                         <Button
@@ -325,6 +336,7 @@ const UserManagement = () => {
                           onClick={() => openDeleteDialog(user)}
                           data-testid={`delete-user-${user.id}`}
                           className="text-[#64748b] hover:text-red-600"
+                          title="Eliminar usuario"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
